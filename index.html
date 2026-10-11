@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en" data-pub="bl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0b0e10">
+<title>Banshee and Black Rose Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css"><script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0b0e10;--panel:#12171a;--line:#222a2f;--text:#e6ece9;--muted:#8a979a;--ac:#4fb8a8;--ac2:#1d4a43;--dk:#0f2724;--bad:#e0707a;--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--head:"Barlow Condensed",var(--font);--px:"Press Start 2P",ui-monospace,Menlo,Consolas,monospace}
+html[data-pub="br"]{--ac:#d6a840;--ac2:#4a3812;--dk:#2a210b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);overscroll-behavior:none;touch-action:manipulation}
+body{min-height:100vh;padding:10px 16px 28px;display:flex;flex-direction:column;align-items:center;gap:12px;background:radial-gradient(900px 400px at 50% -80px,color-mix(in srgb,var(--ac) 16%,transparent),transparent),var(--bg)}
+.wrap{width:100%;max-width:560px;display:flex;flex-direction:column;gap:12px;min-width:0}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+h1{margin:0;font-family:var(--head);font-weight:700;text-transform:uppercase;letter-spacing:.07em;font-size:1.5rem;line-height:1.05}h1 small{display:block;font-size:.72rem;letter-spacing:.2em;color:var(--ac);font-weight:600}
+.tg{display:flex;gap:6px}.tg button,.mini{font:inherit;font-weight:700;font-size:.82rem;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.tg button[aria-pressed="true"]{color:#0b0e10;background:var(--ac);border-color:var(--ac)}.mini:hover,.tg button:hover{border-color:var(--muted)}
+.cards{display:grid;gap:12px}
+.card{display:flex;gap:14px;align-items:center;text-align:left;font:inherit;color:var(--text);background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ac);border-radius:12px;padding:12px;cursor:pointer;min-width:0}
+.card:hover{border-color:var(--ac)}.card canvas{flex:none;width:96px;height:72px;border-radius:8px;background:var(--dk);image-rendering:pixelated}
+.card h2{margin:0 0 4px;font-family:var(--head);text-transform:uppercase;letter-spacing:.05em;font-size:1.25rem}.card p{margin:0;color:var(--muted);font-size:.86rem;line-height:1.35}.card .best{margin-top:6px;font-family:var(--px);font-size:.55rem;color:var(--ac)}
+.soon{opacity:.55;cursor:default}.soon:hover{border-color:var(--line)}
+#game{display:none;flex-direction:column;gap:10px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hud{display:flex;gap:10px;align-items:center;justify-content:space-between;font-family:var(--px);font-size:.62rem;line-height:1.4;color:var(--text);min-width:0;flex-wrap:wrap}.hud b{color:var(--ac);font-weight:400}.hud .l{color:var(--bad)}
+.hint{min-height:1.2em;font-size:.82rem;color:var(--muted);text-align:center}
+.stage{position:relative;border:2px solid var(--ac2);border-radius:10px;overflow:hidden;background:#000;box-shadow:0 0 0 1px var(--line),0 0 24px color-mix(in srgb,var(--ac) 18%,transparent);align-self:center;max-width:100%}
+canvas#cv{display:block;image-rendering:pixelated;touch-action:none;max-width:100%}
+#ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:16px;background:rgba(6,9,10,.82)}
+#ov h3{margin:0;font-family:var(--px);font-weight:400;font-size:1rem;line-height:1.5;color:var(--ac);text-shadow:0 0 12px var(--ac)}#ov p{margin:0;font-size:.86rem;color:var(--text);max-width:30ch;line-height:1.45}
+#ov button{font-family:var(--px);font-size:.75rem;padding:12px 18px;border-radius:8px;border:2px solid var(--ac);background:var(--dk);color:var(--text);cursor:pointer}#ov button:hover{background:var(--ac2)}
+.pad{display:flex;justify-content:space-between;align-items:center;gap:16px;user-select:none;-webkit-user-select:none;touch-action:none}
+.pb{border-radius:14px;border:2px solid var(--ac2);background:var(--panel);color:var(--ac);font-size:1.4rem;display:flex;align-items:center;justify-content:center;font-family:var(--px);touch-action:none;cursor:pointer}.pb.on{background:var(--ac2);border-color:var(--ac)}
+.big{width:86px;height:86px;border-radius:50%;font-size:.8rem}
+.foot{text-align:center;color:var(--muted);font-size:.74rem;line-height:1.5}
+.joy{position:relative;width:140px;height:140px;border-radius:50%;border:2px solid var(--ac2);background:radial-gradient(circle,var(--panel),var(--bg));touch-action:none;user-select:none;-webkit-user-select:none;flex:none}
+.joy:before{content:"";position:absolute;inset:36px;border-radius:50%;border:1px dashed var(--ac2)}
+.knob{position:absolute;left:50%;top:50%;width:60px;height:60px;margin:-30px 0 0 -30px;border-radius:50%;background:var(--ac2);border:2px solid var(--ac);box-shadow:0 0 16px color-mix(in srgb,var(--ac) 40%,transparent);pointer-events:none}
+#sm{position:fixed;inset:0;z-index:9;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(5,8,9,.9)}
+#sm .c{width:100%;max-width:460px;max-height:100%;overflow:auto;background:var(--panel);border:2px solid var(--ac);border-radius:14px;padding:18px;box-shadow:0 0 30px color-mix(in srgb,var(--ac) 25%,transparent)}
+#sm .tag{font-family:var(--px);font-size:.55rem;line-height:1.5;color:var(--ac)}#sm .tag.lg{color:#c9a0d8}
+#sm h3{font-family:var(--head);text-transform:uppercase;letter-spacing:.06em;font-size:1.6rem;line-height:1.1;margin:6px 0 10px}
+#sm p{line-height:1.55;font-size:.95rem;margin:0 0 14px}#sm .sub{font-size:.78rem;color:var(--muted);margin:-4px 0 14px}
+#sm .go{width:100%;font-family:var(--px);font-size:.75rem;padding:13px;border-radius:8px;border:2px solid var(--ac);background:var(--dk);color:var(--text);cursor:pointer}
+#sm ul{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}#sm li{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:.9rem}#sm li.lk{color:var(--muted)}
+#sm summary{cursor:pointer;font-weight:600}#sm li p{margin:8px 0 2px;font-size:.88rem}
+.tg2{font-family:var(--px);font-size:.45rem;color:var(--ac);margin-left:8px;white-space:nowrap}
+#sm .opts{display:grid;gap:8px;margin:0 0 12px}#sm .opt{font:inherit;font-weight:600;padding:13px;border-radius:8px;border:1px solid var(--ac2);background:var(--dk);color:var(--text);cursor:pointer;text-align:left}#sm .opt:hover{border-color:var(--ac)}#sm .hnt{font:inherit;font-size:.8rem;width:100%;padding:8px;margin-bottom:8px;background:transparent;border:0;color:var(--muted);cursor:pointer;text-decoration:underline}
+#sm .lnk{display:block;text-align:center;text-decoration:none;margin-bottom:8px;line-height:1.2}
+#ov{z-index:5}#rmap{position:absolute;inset:0;z-index:2;background:#0e0c08}#rmap .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) saturate(.55) brightness(.92) contrast(.95)}
+.mk{background:none;border:0}.mk i{position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;border:2px solid #0b0a07;background:#5a6366;color:#0b0a07;font:700 12px/22px system-ui,sans-serif;font-style:normal;text-align:center}
+.mk.next i{background:#ffd36a;box-shadow:0 0 0 5px rgba(255,211,106,.28)}.mk.done i{background:var(--ac)}.mk.stop i{background:#e8d9b0;border-color:var(--ac)}.mk.sel i{outline:2px solid #fff;outline-offset:2px}
+.mk.l b{left:auto;right:31px}.mk b{position:absolute;left:31px;top:5px;font:700 10px/1.1 system-ui,sans-serif;color:#fff;white-space:nowrap;text-shadow:0 0 3px #000,0 0 3px #000,0 0 5px #000}
+.nb{display:none;gap:8px;flex-wrap:wrap;justify-content:center}
+@media(max-width:380px){.joy{width:124px;height:124px}.big{width:76px;height:76px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style></head><body>
+<div class="wrap">
+<header><h1><small id="pn">The Banshee Labyrinth</small>Arcade</h1><div class="tg"><button type="button" data-p="bl" aria-pressed="true">Banshee</button><button type="button" data-p="br" aria-pressed="false">Black Rose</button><button type="button" class="mini" id="mute" aria-label="Sound">Sound on</button></div></header>
+<section id="menu"><div class="cards">
+ <button type="button" class="card" data-g="qs"><canvas width="96" height="72" data-th="qs"></canvas><div><h2>Old Town Quest</h2><p>Travel a map of the real Old Town. Find an item, solve the riddle door and unlock the story of each place.</p><div class="best" data-b="qs"></div></div></button>
+ <button type="button" class="card" data-g="pl"><canvas width="96" height="72" data-th="pl"></canvas><div><h2>Cellar Ghost</h2><p id="plp"></p><div class="best" data-b="pl"></div></div></button>
+ <button type="button" class="card" data-g="mz"><canvas width="96" height="72" data-th="mz"></canvas><div><h2>Labyrinth Chase</h2><p>Gobble every hop. Every level is a new maze and each one is trickier. Grab a golden pint to turn the tables.</p><div class="best" data-b="mz"></div></div></button>
+ <button type="button" class="card" id="bookcard"><canvas width="96" height="72" data-th="bk"></canvas><div><h2>Story Book</h2><p>The true and legendary stories of the Old Town, found in the games.</p><div class="best" id="bookn"></div></div></button>
+ <div class="card soon"><canvas width="96" height="72"></canvas><div><h2>More coming</h2><p>Snake, Breakout and a pub quiz are next.</p></div></div>
+</div><p class="foot">Best scores are saved on this device for now. A shared staff leaderboard comes next.</p></section>
+<section id="game">
+ <div class="top"><button type="button" class="mini" id="back">&larr; Games</button><div class="hud" id="hud"></div></div>
+ <div class="hint" id="hint"></div>
+ <div class="stage" id="stage"><canvas id="cv"></canvas><div id="ov"></div></div>
+ <div class="nb" id="nb"></div>
+ <div class="pad" id="pad"><div class="joy" id="joy" aria-label="Joystick"><div class="knob" id="knob"></div></div><button class="pb big" data-k="a" id="abtn" aria-label="Jump">JUMP</button></div>
+ <p class="foot" id="keys"></p>
+</section>
+<div id="sm"></div>
+</div>
+<script>
+(function(){
+"use strict";
+var $=function(s){return document.querySelector(s)},$$=function(s){return [].slice.call(document.querySelectorAll(s))};
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){}return null}
+var PUBS={bl:{n:"The Banshee Labyrinth",ac:"#4fb8a8",dk:"#0f2724",br:"#1d4a43",br2:"#143832",hi:"#2f7d71"},br:{n:"The Black Rose Tavern",ac:"#d6a840",dk:"#2a210b",br:"#4a3812",br2:"#352809",hi:"#8c6a1f"}};
+var curAct="";
+var pub=ls("arc_pub")==="br"?"br":"bl",P=PUBS[pub];
+var muted=ls("arc_mute")==="1",AC=null;
+function beep(f,d,t,v){if(muted)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();var o=AC.createOscillator(),g=AC.createGain();o.type=t||"square";o.frequency.value=f;g.gain.value=v||.04;o.connect(g);g.connect(AC.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.stop(AC.currentTime+d)}catch(e){}}
+function rnd(a,b){return a+Math.random()*(b-a)}
+var sm=$("#sm"),smFn=null;
+function showModal(html,btn,fn){sm.innerHTML="<div class=\"c\">"+html+"<button type=\"button\" class=\"go\">"+btn+"</button></div>";sm.style.display="flex";smFn=fn||null;var b=sm.querySelector("button.go");b.onclick=closeModal;try{b.focus()}catch(e){}}
+function closeModal(){sm.style.display="none";var f=smFn;smFn=null;if(f)f()}
+/* ---------------- input ---------------- */
+var K={l:0,r:0,u:0,d:0,a:0},KP={};
+var KM={ArrowLeft:"l",KeyA:"l",ArrowRight:"r",KeyD:"r",ArrowUp:"u",KeyW:"u",ArrowDown:"d",KeyS:"d",Space:"a",KeyZ:"a",KeyX:"a"};
+window.addEventListener("keydown",function(e){if(sm.style.display==="flex"){if(e.code==="Space"||e.code==="Enter"||e.code==="Escape"){e.preventDefault();closeModal()}return}var k=KM[e.code];if(!k||!G)return;e.preventDefault();if(!K[k])KP[k]=1;K[k]=1;if(G.press)G.press(k)});
+window.addEventListener("keyup",function(e){var k=KM[e.code];if(!k)return;K[k]=0});
+window.addEventListener("blur",function(){K.l=K.r=K.u=K.d=K.a=0});
+$$("#pad [data-k]").forEach(function(b){var k=b.dataset.k;
+ function dn(e){e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(x){}if(!K[k])KP[k]=1;K[k]=1;b.classList.add("on");if(G&&G.press)G.press(k)}
+ function up(e){e.preventDefault();K[k]=0;b.classList.remove("on")}
+ b.addEventListener("pointerdown",dn);b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up);b.addEventListener("contextmenu",function(e){e.preventDefault()})});
+var joy=$("#joy"),knob=$("#knob"),jid=null,jdir="";
+function setK(k,on){if(on){if(!K[k])KP[k]=1;K[k]=1}else K[k]=0}
+function joyMove(e){var r=joy.getBoundingClientRect(),R=r.width/2,dx=e.clientX-(r.left+R),dy=e.clientY-(r.top+R),m=Math.hypot(dx,dy),mx=R-8;if(m>mx){dx*=mx/m;dy*=mx/m}
+ knob.style.transform="translate("+dx+"px,"+dy+"px)";var nx=dx/R,ny=dy/R;
+ setK("l",nx<-.26);setK("r",nx>.26);setK("u",ny<-.55);
+ var d="";if(Math.hypot(nx,ny)>.28)d=Math.abs(nx)>Math.abs(ny)?(nx>0?"r":"l"):(ny>0?"d":"u");
+ if(d&&d!==jdir&&G&&G.stick&&G.press)G.press(d);if(d)jdir=d}
+function joyEnd(){jid=null;jdir="";knob.style.transform="";K.l=K.r=K.u=0}
+joy.addEventListener("pointerdown",function(e){e.preventDefault();jid=e.pointerId;try{joy.setPointerCapture(e.pointerId)}catch(x){}jdir="";joyMove(e)});
+joy.addEventListener("pointermove",function(e){if(e.pointerId===jid){e.preventDefault();joyMove(e)}});
+["pointerup","pointercancel","lostpointercapture"].forEach(function(n){joy.addEventListener(n,function(e){if(e.pointerId===jid)joyEnd()})});
+joy.addEventListener("contextmenu",function(e){e.preventDefault()});
+/* ---------------- shell ---------------- */
+var G=null,cv=$("#cv"),cx=cv.getContext("2d"),last=0,acc=0,raf=0,GAMES={};
+function best(g){return +(ls("arc_best_"+g+"_"+pub)||0)}
+function setBest(g,s){if(s>best(g))ls("arc_best_"+g+"_"+pub,String(s))}
+function applyPub(){curAct="";P=PUBS[pub];document.documentElement.dataset.pub=pub;$("#pn").textContent=P.n;$$(".tg [data-p]").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.p===pub?"true":"false")});
+ $$("[data-b]").forEach(function(e){var s=best(e.dataset.b);e.textContent=s?"BEST "+s:"NO SCORE YET"});drawThumbs();$("#plp").textContent=pub==="br"?"Start in the Black Rose. The way down to the Banshee Labyrinth is locked: find the key, descend, fetch the golden pint and bring it home.":"Fetch the golden pint from the Banshee's chamber, deep below, and carry it back to the bar. Mind the bats.";$("#bookn").textContent="FOUND "+foundCount()+" OF "+ST.length;$("#mute").textContent=muted?"Sound off":"Sound on";if(G&&G.recolor)G.recolor()}
+$$(".tg [data-p]").forEach(function(b){b.onclick=function(){pub=b.dataset.p;ls("arc_pub",pub);applyPub()}});
+$("#mute").onclick=function(){muted=!muted;ls("arc_mute",muted?"1":"0");$("#mute").textContent=muted?"Sound off":"Sound on";beep(660,.08)};
+function overlay(title,text,btn,fn){var o=$("#ov");o.hidden=false;o.style.display="flex";o.innerHTML="<h3>"+title+"</h3>"+(text?"<p>"+text+"</p>":"")+"<button type=\"button\">"+btn+"</button>";o.querySelector("button").onclick=function(){o.style.display="none";fn()}}
+function hideOv(){$("#ov").style.display="none"}
+function hud(h){$("#hud").innerHTML=h}function hint(t){$("#hint").textContent=t||""}
+function open(g){G=GAMES[g];$("#menu").style.display="none";$("#game").style.display="flex";$("#abtn").style.display=G.abtn?"":"none";$("#abtn").textContent=G.abtn||"";$("#keys").textContent=G.keys;G.init();last=performance.now();acc=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop)}
+$("#bookcard").onclick=openBook;
+$$("#menu .card[data-g]").forEach(function(c){c.onclick=function(){open(c.dataset.g)}});
+$("#back").onclick=function(){cancelAnimationFrame(raf);G=null;$("#game").style.display="none";$("#menu").style.display="";applyPub()};
+function loop(t){raf=requestAnimationFrame(loop);if(!G)return;acc+=Math.min(100,t-last);last=t;while(acc>=16.667){G.update();KP={};acc-=16.667}G.draw(cx)}
+/* ---------------- stories ---------------- */
+var ST=[
+{id:"maggie",k:"HISTORY",w:"Black Rose Bar",t:"Half-Hangit Maggie",x:"In 1724 Margaret Dickson was hanged in the Grassmarket and placed in a coffin for burial. On the way, she was found to be breathing. The law could not hang her twice, so she walked free, and Edinburgh called her Half-Hangit Maggie for the rest of her life."},
+{id:"maiden",k:"HISTORY",w:"Black Rose Bar",t:"The Maiden",x:"Scotland's guillotine arrived in Edinburgh in 1564, more than two centuries before the French one. It was used for over 150 years. The Earl of Morton, said to have helped bring it to Scotland, was executed on it in 1581. The original is kept by National Museums Scotland."},
+{id:"weir",k:"HISTORY AND LEGEND",w:"Black Rose Cellar",t:"Major Weir",x:"Thomas Weir was admired for his piety until 1670, when he confessed to terrible crimes and was executed. Legend says his walking stick moved by itself, and that his house on the West Bow stood empty for over a century."},
+{id:"brodie",k:"HISTORY",w:"Black Rose Cellar",t:"Deacon Brodie",x:"By day William Brodie was a respected cabinet maker and town councillor. By night he copied his clients' keys and robbed them. He was hanged in 1788, and Robert Louis Stevenson later drew on his double life for Jekyll and Hyde."},
+{id:"banshee",k:"LEGEND",w:"The Banshee Bar",t:"Why the Banshee?",x:"In Irish folklore a banshee's scream warns that someone is about to die. Local tradition says workers renovating this building heard a scream in the dark with no source. The old name, Nicol Edward's, was dropped, and the Banshee Labyrinth began."},
+{id:"nicol",k:"LEGEND",w:"The Banshee Bar",t:"Nicol Edwards",x:"Nicol Edwards was a wealthy Edinburgh merchant, and the pub on this site carried his name long after he was gone. Local tradition calls him a hard, cruel man and says windowless rooms beneath his house held women accused of witchcraft. No record confirms the darkest version."},
+{id:"vaults",k:"HISTORY",w:"South Bridge Vaults",t:"The South Bridge Vaults",x:"Completed in the late 1700s, the South Bridge hides a row of nineteen arches with chambers beneath. Tradesmen used them at first, but damp drove them out and the poor moved in. Many vaults were sealed and forgotten for around a century, and only a fraction have ever been opened."},
+{id:"fire",k:"HISTORY",w:"South Bridge Vaults",t:"The Great Fire, 1824",x:"On 15 November 1824 fire tore through the Old Town's crowded timber tenements and burned for days. It led to the first municipal fire brigade, set up under James Braidwood the following year."},
+{id:"cowgate",k:"LEGEND",w:"The Cowgate",t:"Ghosts of the Cowgate",x:"The Cowgate sits low, below the bridges, and was long a street of poverty and overcrowding. People report footsteps with no one there, cold spots and voices at the edge of hearing. None of it can be proved, and all of it keeps repeating."},
+{id:"plague",k:"HISTORY",w:"The Cowgate",t:"Poverty and Plague",x:"Old Town tenements rose as high as eleven storeys, with almost no sanitation and little light on the lower floors. When fever or plague arrived, it spread fast. Edinburgh's ghost stories grew out of real suffering like this."},
+{id:"resurrection",k:"HISTORY",w:"The Cowgate",t:"The Resurrection Men",x:"Before Burke and Hare, grave robbers dug up fresh bodies at night with wooden spades and sold them to the medical schools. Families fought back with heavy iron mortsafes bolted over new graves."},
+{id:"burke",k:"HISTORY",w:"Nicol Edward's Cellar",t:"Burke and Hare",x:"In 1827 and 1828 William Burke and William Hare killed an estimated sixteen people and sold the bodies to the anatomist Dr Robert Knox. Hare turned king's evidence. Burke was hanged on 28 January 1829."},
+{id:"mackenzie",k:"LEGEND",w:"Nicol Edward's Cellar",t:"The Mackenzie Poltergeist",x:"Sir George Mackenzie, the Lord Advocate who prosecuted the Covenanters, was buried at Greyfriars in 1691. Since a break-in at his tomb in 1999, visitors have reported scratches, bruises and blackouts nearby. Sceptics blame suggestion, but the reports continue."},
+{id:"covenanters",k:"HISTORY",w:"Nicol Edward's Cellar",t:"The Killing Time",x:"The Covenanters were Presbyterians who refused the crown's control over their church. After the Battle of Bothwell Bridge in 1679, around 1,200 prisoners were held in an open enclosure at Greyfriars through the winter. The years of persecution became known as the Killing Time."},
+{id:"sawney",k:"LEGEND",w:"The Banshee's Chamber",t:"Sawney Bean",x:"The tale of a cannibal clan living in an Ayrshire sea cave has no contemporary record at all. Historians trace it to 18th century pamphlets. Treat it as folklore, not fact."},
+{id:"well",k:"HISTORY",w:"The Banshee's Chamber",t:"The Witches' Well",x:"A small bronze fountain at the foot of Edinburgh Castle's esplanade, placed in 1894 on the site of Castlehill, where people convicted of witchcraft were burned. An estimated 300 to 400 died at or near the spot, and most of their names were never recorded."},
+{id:"marykings",k:"HISTORY AND LEGEND",w:"The Banshee's Chamber",t:"Mary King's Close",x:"Part of the street was built over in the 1750s when the Royal Exchange went up. The tale of residents sealed in during a plague is mostly exaggerated, but the close survives beneath the City Chambers and can still be visited."}
+];
+var STM={};ST.forEach(function(s){STM[s.id]=s});
+var FOUND={};(ls("arc_story")||"").split(",").forEach(function(i){if(i&&STM[i])FOUND[i]=1});
+function foundCount(){return Object.keys(FOUND).length}
+function markFound(id){if(!FOUND[id]){FOUND[id]=1;ls("arc_story",Object.keys(FOUND).join(","))}}
+function nextStory(){for(var i=0;i<ST.length;i++)if(!FOUND[ST[i].id])return ST[i];return null}
+function storyHtml(st){return "<div class=\"tag"+(/LEGEND/.test(st.k)?" lg":"")+"\">"+st.k+"</div><h3>"+st.t+"</h3><p>"+st.x+"</p>"}
+function readStory(id,fn){var st=STM[id];markFound(id);showModal(storyHtml(st)+"<div class=\"sub\">Story "+foundCount()+" of "+ST.length+" found</div>","CONTINUE",fn)}
+function openBook(){var h="<div class=\"tag\">STORY BOOK</div><h3>"+foundCount()+" of "+ST.length+" found</h3><p>Find scrolls in Cellar Ghost and finish levels in Labyrinth Chase. Anything marked legend is folklore, not proven history. Some stories only turn up in the Black Rose edition.</p><ul>";
+ ST.forEach(function(s){var f=FOUND[s.id];h+=f?"<li><details><summary>"+s.t+"<span class=\"tg2\">"+s.k+"</span></summary><p>"+s.x+"</p></details></li>":"<li class=\"lk\">??? <span class=\"tg2\">"+s.w+"</span></li>"});
+ showModal(h+"</ul>","CLOSE",function(){applyPub()})}
+/* ================= game 1: Cellar Ghost, the quest ================= */
+var TS=16,RC=20,RR=12,PW=320,PH=192;
+function mkRoom(name,pb,o){var g=[],r,c;for(r=0;r<RR;r++){g.push([]);for(c=0;c<RC;c++)g[r].push(".")}
+ for(c=0;c<RC;c++){g[0][c]="#";g[RR-1][c]="#"}
+ for(r=1;r<RR-1;r++){g[r][0]=(o.left&&(r===9||r===10))?".":"#";g[r][RC-1]=(o.right&&(r===9||r===10))?".":"#"}
+ (o.plats||[]).forEach(function(p){for(var c=p[1];c<=p[2];c++)g[p[0]][c]="#"});
+ (o.walls||[]).forEach(function(w){for(var r=w[0];r<=w[1];r++)for(var c=w[2];c<=w[3];c++)g[r][c]="#"});
+ if(o.door)for(r=o.door[1];r<=o.door[2];r++)g[r][o.door[0]]="D";
+ (o.spikes||[]).forEach(function(s){for(var c=s[1];c<=s[2];c++)g[s[0]][c]="^"});
+ return {name:name,pub:pb,g:g,stars:o.stars||[],bats:o.bats||[],torches:o.torches||[],scrolls:o.scrolls||[]}}
+var PR=[
+ mkRoom("The Black Rose Bar","br",{right:true,plats:[[8,4,8],[5,9,13],[8,13,17]],stars:[[6,7],[15,7],[11,3],[3,9]],torches:[[3,4],[16,4]],scrolls:[[5,10,"maggie"],[17,7,"maiden"]]}),
+ mkRoom("The Black Rose Cellar","br",{left:true,right:true,walls:[[1,8,17,19]],door:[17,9,10],plats:[[6,3,6],[8,8,12],[5,10,14]],stars:[[3,5],[10,7],[12,4],[15,9]],bats:[{cx:80,cy:70,ax:50,ay:14,sp:.03,ph:0},{cx:210,cy:100,ax:40,ay:20,sp:.04,ph:2}],torches:[[2,3],[9,3]],scrolls:[[6,5,"weir"],[14,4,"brodie"]]}),
+ mkRoom("The Banshee Bar","bl",{left:true,right:true,plats:[[8,6,9],[6,11,14],[8,15,18]],stars:[[6,7],[11,5],[16,7],[3,9]],torches:[[3,4],[16,4]],scrolls:[[9,7,"banshee"],[13,5,"nicol"]]}),
+ mkRoom("South Bridge Vaults","bl",{left:true,right:true,plats:[[8,3,5],[6,7,10],[4,12,14],[7,16,18]],stars:[[4,7],[10,5],[12,3],[17,6]],bats:[{cx:150,cy:110,ax:70,ay:18,sp:.03,ph:0}],torches:[[2,3],[18,3]],scrolls:[[7,5,"vaults"],[14,3,"fire"]]}),
+ mkRoom("The Cowgate","bl",{left:true,right:true,spikes:[[10,4,6],[10,11,12]],plats:[[8,7,10],[5,13,17]],stars:[[8,7],[15,4],[5,8],[18,9]],bats:[{cx:230,cy:125,ax:30,ay:14,sp:.04,ph:1}],torches:[[3,3],[11,3]],scrolls:[[9,7,"cowgate"],[16,4,"plague"],[17,10,"resurrection"]]}),
+ mkRoom("Nicol Edward's Cellar","bl",{left:true,right:true,spikes:[[10,8,9]],plats:[[8,2,5],[6,8,10],[8,12,14],[5,16,18]],stars:[[4,7],[13,7],[10,8],[18,9]],bats:[{cx:100,cy:60,ax:60,ay:14,sp:.035,ph:0},{cx:230,cy:105,ax:50,ay:18,sp:.04,ph:2}],torches:[[2,3],[13,3]],scrolls:[[3,7,"burke"],[9,5,"mackenzie"],[17,4,"covenanters"]]}),
+ mkRoom("The Banshee's Chamber","bl",{left:true,spikes:[[10,9,11]],plats:[[8,3,6],[6,8,11],[4,13,16]],stars:[[5,7],[9,5],[14,9],[12,3]],bats:[{cx:120,cy:80,ax:60,ay:20,sp:.05,ph:0},{cx:230,cy:60,ax:50,ay:14,sp:.055,ph:2}],torches:[[1,3],[16,8]],scrolls:[[4,7,"sawney"],[10,5,"well"],[17,10,"marykings"]]})
+];
+var PLX=null,RMS=PR;
+function setAct(p){if(p===curAct)return;curAct=p;P=PUBS[p];document.documentElement.dataset.pub=p}
+var PLG=GAMES.pl={abtn:"JUMP",keys:"Joystick or arrow keys to move. Up, Space or the JUMP button to jump.",
+ init:function(){RMS=PR;var br=pub==="br",st=br?0:2;setAct(PR[st].pub);
+  PLX={room:st,minRoom:st,barRoom:st,ed:br?"br":"bl",x:40,y:PH-TS-14,vx:0,vy:0,ground:false,face:1,lives:3,score:0,hold:null,doorOpen:!br,items:[],stars:[],scr:[],t:0,bt:0,dead:0,msg:"",mt:0,state:"ready",won:false,sx:40,sy:PH-TS-14,part:[],anim:0,coy:0,jb:0,time:0,panic:false,shake:0,seen:{}};
+  PLX.items=[{id:"pint",room:6,tx:15,ty:3,got:false}];if(br)PLX.items.unshift({id:"key",room:0,tx:11,ty:4,got:false});
+  PR.forEach(function(r,i){PLX.stars[i]=r.stars.map(function(s){return {tx:s[0],ty:s[1],got:false}});PLX.scr[i]=r.scrolls.map(function(c){return {tx:c[0],ty:c[1],id:c[2],got:false}})});
+  cv.width=PW;cv.height=PH;sizeCv();this.hudUpd();hint("");
+  overlay(br?"THE BLACK ROSE QUEST":"THE BANSHEE'S PINT",br?"The way down to the Banshee Labyrinth is locked. Find the key, go down, fetch the golden pint and bring it back to this bar.":"Fetch the golden pint from the Banshee's chamber, deep below, and carry it back to the bar.","PLAY",function(){PLX.state="play";beep(440,.1)})},
+ recolor:function(){},
+ hudUpd:function(){var s=PLX;hud("<span class=\"l\">"+"♥".repeat(Math.max(0,s.lives))+"</span><span>SCORE <b>"+s.score+"</b></span><span>CARRY <b>"+(s.hold?(s.hold==="key"?"KEY":"PINT"):"-")+"</b></span><span>BOOK <b>"+foundCount()+"/"+ST.length+"</b></span>")},
+ press:function(k){}
+};
+function sizeCv(){var w=Math.min(560,window.innerWidth-36),sc=Math.min(w/cv.width,Math.max(1,(window.innerHeight-290)/cv.height));sc=Math.max(.75,Math.floor(sc*4)/4);cv.style.width=Math.floor(cv.width*sc)+"px";cv.style.height=Math.floor(cv.height*sc)+"px"}
+window.addEventListener("resize",function(){if(G)sizeCv()});
+function solidAt(room,tx,ty,open){if(tx<0||tx>=RC)return false;if(ty<0)return true;if(ty>=RR)return true;var c=RMS[room].g[ty][tx];return c==="#"||(c==="D"&&!open)}
+function hitsSolid(s,x,y,w,h){var x0=Math.floor(x/TS),x1=Math.floor((x+w-.01)/TS),y0=Math.floor(y/TS),y1=Math.floor((y+h-.01)/TS);for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++)if(solidAt(s.room,tx,ty,s.doorOpen))return true;return false}
+function hitsSpike(s){var x0=Math.floor((s.x+2)/TS),x1=Math.floor((s.x+8)/TS),y0=Math.floor((s.y+8)/TS),y1=Math.floor((s.y+13)/TS);for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++){if(tx>=0&&tx<RC&&ty>=0&&ty<RR&&RMS[s.room].g[ty][tx]==="^"){var ox=tx*TS,oy=ty*TS+6;if(s.x+8>ox+2&&s.x+2<ox+TS-2&&s.y+14>oy)return true}}return false}
+function batPos(b,t){return {x:b.cx+Math.sin(t*b.sp+b.ph)*b.ax,y:b.cy+Math.sin(t*b.sp*1.7+b.ph)*b.ay}}
+function plStep(s,inp,sim){
+ var sp=1.9,g=.32,jv=-6.2;
+ var mx=(inp.r?1:0)-(inp.l?1:0);s.vx=mx*sp;if(mx)s.face=mx;
+ if(s.ground)s.coy=6;else if(s.coy>0)s.coy--;
+ if(inp.jp)s.jb=6;else if(s.jb>0)s.jb--;
+ if(s.jb>0&&s.coy>0){s.vy=jv;s.ground=false;s.coy=0;s.jb=0;if(!sim)beep(520,.12,"square",.03)}
+ if(!inp.j&&s.vy<-2.4)s.vy=-2.4;
+ s.vy=Math.min(7,s.vy+g);
+ var nx=s.x+s.vx;if(!hitsSolid(s,nx,s.y,10,14))s.x=nx;else{var st=Math.sign(s.vx);while(st&&!hitsSolid(s,s.x+st*.5,s.y,10,14))s.x+=st*.5}
+ var ny=s.y+s.vy;s.ground=false;
+ if(!hitsSolid(s,s.x,ny,10,14))s.y=ny;else{if(s.vy>0){s.ground=true;s.y=Math.floor((s.y+s.vy+14)/TS)*TS-14}else{s.y=Math.floor(ny/TS+1)*TS}s.vy=0}
+ if(s.x+5>PW){if(RMS[s.room+1]){s.room++;s.x=2;s.sx=2;s.sy=s.y}else s.x=PW-10}
+ if(s.x+5<0){if(RMS[s.room-1]&&s.room-1>=(s.minRoom||0)){s.room--;s.x=PW-12;s.sx=PW-12;s.sy=s.y}else s.x=-5}
+}
+function onRoom(s){setAct(PR[s.room].pub);
+ if(s.ed==="br"&&s.room===2&&!s.seen.d){s.seen.d=1;s.state="story";showModal("<div class=\"tag\">THE BANSHEE LABYRINTH</div><h3>Down into the dark</h3><p>The cellar door opens onto older stone and colder air. This is the Banshee Labyrinth. Somewhere far below, the golden pint is waiting.</p>","GO ON",function(){s.state="play"})}}
+PLG.update=function(){var s=PLX;if(!s)return;s.anim++;
+ if(s.shake>0)s.shake--;
+ if(s.state!=="play"){return}
+ s.t++;s.time++;s.bt+=s.panic?1.6:1;
+ if(s.dead>0){s.dead--;if(s.dead===0){if(s.lives<=0){s.state="over";setBest("pl",s.score);overlay("GAME OVER","You scored "+s.score+".<br>Stories found "+foundCount()+" of "+ST.length+".<br>The cellar claims another ghost.","TRY AGAIN",function(){PLG.init()});return}s.x=s.sx;s.y=s.sy;s.vy=0}return}
+ var r0=s.room;
+ plStep(s,{l:K.l,r:K.r,j:K.u||K.a,jp:KP.u||KP.a},false);
+ if(s.room!==r0){onRoom(s);if(s.state!=="play")return}
+ var die=false;if(hitsSpike(s))die=true;
+ PR[s.room].bats.forEach(function(b){var p=batPos(b,s.bt);if(s.x+9>p.x-5&&s.x+1<p.x+5&&s.y+13>p.y-3&&s.y+1<p.y+4)die=true});
+ if(die){s.lives--;s.dead=70;beep(130,.35,"sawtooth",.05);for(var i=0;i<14;i++)s.part.push({x:s.x+5,y:s.y+7,vx:rnd(-2,2),vy:rnd(-3,1),l:30,c:"#e8f4f1"});this.hudUpd();return}
+ s.stars[s.room].forEach(function(st){if(!st.got&&Math.abs(st.tx*TS+8-(s.x+5))<9&&Math.abs(st.ty*TS+8-(s.y+7))<11){st.got=true;s.score+=50;beep(880,.07,"square",.03);PLG.hudUpd();spark(st.tx*TS+8,st.ty*TS+8,P.ac)}});
+ for(var q=0;q<s.scr[s.room].length;q++){var c=s.scr[s.room][q];if(!c.got&&Math.abs(c.tx*TS+8-(s.x+5))<10&&Math.abs(c.ty*TS+8-(s.y+7))<12){c.got=true;s.score+=150;beep(500,.08);beep(760,.12);spark(c.tx*TS+8,c.ty*TS+8,"#e8d9b0");s.state="story";PLG.hudUpd();(function(id){readStory(id,function(){s.state="play";PLG.hudUpd()})})(c.id);return}}
+ s.items.forEach(function(it){if(it.got||it.room!==s.room)return;var ix=it.tx*TS+2,iy=it.ty*TS+2;if(s.x+10>ix&&s.x<ix+12&&s.y+14>iy&&s.y<iy+14){
+   if(s.hold){var h=s.items.filter(function(i){return i.id===s.hold})[0];if(h){h.got=false;h.room=s.room;h.tx=Math.round((s.x-6*s.face)/TS);h.ty=Math.min(10,Math.round(s.y/TS));if(h.tx<1)h.tx=1;if(h.tx>18)h.tx=18}}
+   it.got=true;s.hold=it.id;s.score+=100;beep(660,.1);beep(990,.15);spark(ix+6,iy+6,"#ffd36a");PLG.hudUpd();
+   if(it.id==="pint"){s.panic=true;s.shake=50;beep(180,.6,"sawtooth",.06);beep(120,.8,"sawtooth",.05);s.msg="A scream rings through the Labyrinth. Run!";s.mt=190}
+   else{s.msg="You found the cellar key!";s.mt=150}}});
+ if(!s.doorOpen&&s.room===1){var near=s.x+10>=17*TS-3&&s.y>8*TS;if(near&&s.hold==="key"){s.doorOpen=true;s.hold=null;s.score+=200;beep(300,.2,"triangle",.06);beep(450,.25,"triangle",.06);s.msg="The cellar door creaks open.";s.mt=150;PLG.hudUpd()}else if(near&&s.mt<=0){s.msg="Locked. You need a key.";s.mt=90}}
+ if(s.room===s.barRoom&&s.x<52&&s.y>8*TS){if(s.hold==="pint"){s.won=true;s.state="win";var tb=Math.max(0,1500-Math.floor(s.time/6));s.score+=1000+tb;setBest("pl",s.score);beep(660,.15);setTimeout(function(){beep(880,.15)},150);setTimeout(function(){beep(1320,.3)},300);PLG.hudUpd();overlay("CHEERS!","The ghost gets the golden pint.<br>Score "+s.score+" (time bonus "+tb+")<br>Stories found "+foundCount()+" of "+ST.length,"PLAY AGAIN",function(){PLG.init()})}else if(s.mt<=0&&s.time>150){s.msg=s.hold==="key"?"Ghost bartender: Open the cellar first!":"Ghost bartender: A golden pint, please!";s.mt=120}}
+ if(s.mt>0)s.mt--;
+ var br=s.ed==="br";
+ hint(s.mt>0?s.msg:(s.hold==="pint"?"Carry the pint all the way back to the "+(br?"Black Rose":"bar")+"!":s.hold==="key"?"Take the key to the door in the Black Rose cellar.":(br&&!s.doorOpen)?"Find the key on the high ledge in the bar.":"Fetch the golden pint from the Banshee's chamber, far below."));
+ s.part=s.part.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.1;return--p.l>0});
+};
+function spark(x,y,c){for(var i=0;i<8;i++)PLX.part.push({x:x,y:y,vx:rnd(-1.5,1.5),vy:rnd(-2,.5),l:24,c:c})}
+function rect(c,x,y,w,h){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h)}
+function drawKey(x,y){rect("#ffd36a",x+1,y+1,5,5);rect("#0b0e10",x+3,y+3,1,1);rect("#ffd36a",x+5,y+3,7,2);rect("#ffd36a",x+9,y+5,2,3);rect("#ffd36a",x+12,y+5,1,2)}
+function drawPint(x,y){rect("#fff3d0",x+2,y,8,3);rect("#c9a23a",x+2,y+3,8,9);rect("#ffd36a",x+3,y+4,6,2);rect("rgba(255,255,255,.35)",x+3,y+3,1,8);rect("#8c6a1f",x+3,y+12,6,1)}
+function drawScroll(x,y){rect("#b89a62",x+1,y,10,2);rect("#e8d9b0",x+2,y+2,8,9);rect("#b89a62",x+1,y+11,10,2);rect("#6b5a36",x+3,y+4,6,1);rect("#6b5a36",x+3,y+6,5,1);rect("#6b5a36",x+3,y+8,6,1)}
+function drawGhost(x,y,face,anim,dead){if(dead&&Math.floor(anim/4)%2)return;
+ cx.save();cx.translate(Math.round(x),Math.round(y));cx.shadowColor=P.ac;cx.shadowBlur=8;cx.fillStyle="#e8f4f1";
+ cx.beginPath();cx.moveTo(-1,15);cx.lineTo(-1,6);cx.arc(5,5,6,Math.PI,0);cx.lineTo(11,15);
+ var w=Math.floor(anim/6)%2;cx.lineTo(9,13+w);cx.lineTo(7,15);cx.lineTo(5,13+(1-w));cx.lineTo(3,15);cx.lineTo(1,13+w);cx.closePath();cx.fill();cx.shadowBlur=0;
+ rect("#0b0e10",3+face,5,2,3);rect("#0b0e10",7+face,5,2,3);rect("#0b0e10",5+face,10,2,1);cx.restore()}
+function drawBat(x,y,t){var f=Math.floor(t/5)%2;rect("#7a4a8c",x-2,y-2,4,5);rect("#2a1a33",x-1,y-1,1,1);rect("#2a1a33",x+1,y-1,1,1);var wy=f?-4:0;rect("#9a62b0",x-8,y+wy-1,6,3);rect("#9a62b0",x+2,y+wy-1,6,3);rect("#c9a0d8",x-8,y+wy-1,6,1);rect("#c9a0d8",x+2,y+wy-1,6,1)}
+PLG.draw=function(){var s=PLX;if(!s)return;var rm=PR[s.room],t=s.anim;setAct(rm.pub);
+ cx.save();if(s.shake>0)cx.translate(Math.round(rnd(-2,2)),Math.round(rnd(-2,2)));
+ var gr=cx.createLinearGradient(0,0,0,PH);gr.addColorStop(0,"#07090a");gr.addColorStop(1,P.dk);cx.fillStyle=gr;cx.fillRect(-4,-4,PW+8,PH+8);
+ cx.fillStyle="rgba(255,255,255,.035)";for(var a=0;a<5;a++){var ax=20+a*66;cx.beginPath();cx.arc(ax+16,70,22,Math.PI,0);cx.lineTo(ax+38,150);cx.lineTo(ax-6,150);cx.closePath();cx.fill()}
+ rm.torches.forEach(function(tc){var fx=tc[0]*TS+8,fy=tc[1]*TS+4,fl=Math.sin(t*.3+tc[0])*1.5;var rg=cx.createRadialGradient(fx,fy,2,fx,fy,50);rg.addColorStop(0,"rgba(255,170,60,.28)");rg.addColorStop(1,"rgba(255,170,60,0)");cx.fillStyle=rg;cx.fillRect(fx-50,fy-50,100,100);rect("#5a3a1a",fx-1,fy+4,3,8);rect("#ff8a2a",fx-2,fy-3+fl,5,7);rect("#ffd36a",fx-1,fy-1+fl,3,4)});
+ for(var r=0;r<RR;r++)for(var c=0;c<RC;c++){var ch=rm.g[r][c],x=c*TS,y=r*TS;
+  if(ch==="#"){rect(P.br,x,y,TS,TS);rect(P.br2,x,y+7,TS,1);rect(P.br2,x,y+15,TS,1);rect(P.br2,x+(r%2?4:11),y,1,8);rect(P.br2,x+(r%2?11:4),y+8,1,8);if(r<RR-1&&rm.g[r-1]&&rm.g[r-1][c]!=="#")rect(P.hi,x,y,TS,2)}
+  else if(ch==="D"&&!s.doorOpen){rect("#5a3a1a",x,y,TS,TS);rect("#3d2810",x+7,y,2,TS);rect("#8a5a2a",x,y,TS,1);rect("#ffd36a",x+11,y+7,2,3)}
+  else if(ch==="^"){cx.fillStyle="#cfd8d6";for(var k=0;k<2;k++){cx.beginPath();cx.moveTo(x+k*8,y+16);cx.lineTo(x+k*8+4,y+7);cx.lineTo(x+k*8+8,y+16);cx.fill()}}}
+ if(s.room===s.minRoom&&rm.g[9][0]==="."){for(var rr=9;rr<=10;rr++){rect(P.br,0,rr*TS,TS,TS);rect(P.br2,0,rr*TS+7,TS,1);rect(P.br2,4,rr*TS,1,8)}}
+ if(s.room===s.barRoom){rect("#3d2810",0,PH-TS*3,40,TS*2);rect("#5a3a1a",0,PH-TS*3,40,3);rect("#241608",0,PH-TS-4,40,3);
+  var by=PH-TS*3-20;cx.fillStyle=s.ed==="br"?"#5c4a3a":"#3a3f5c";cx.beginPath();cx.arc(20,by+10,10,Math.PI,0);cx.lineTo(30,by+22);cx.lineTo(10,by+22);cx.fill();rect("#0b0e10",16,by+8,2,3);rect("#0b0e10",22,by+8,2,3);rect("#cfd8d6",18,by+13,4,1)}
+ s.items.forEach(function(it){if(it.got||it.room!==s.room)return;var bob=Math.sin(t*.1)*1.5,ix=it.tx*TS+2,iy=it.ty*TS+2+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,14);rg.addColorStop(0,"rgba(255,211,106,.4)");rg.addColorStop(1,"rgba(255,211,106,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);it.id==="key"?drawKey(ix,iy):drawPint(ix,iy)});
+ s.scr[s.room].forEach(function(c){if(c.got)return;var bob=Math.sin(t*.09+c.tx)*1.5,ix=c.tx*TS+2,iy=c.ty*TS+1+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,13);rg.addColorStop(0,"rgba(232,217,176,.35)");rg.addColorStop(1,"rgba(232,217,176,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);drawScroll(ix,iy)});
+ s.stars[s.room].forEach(function(st){if(st.got)return;var bob=Math.sin(t*.12+st.tx)*1.5,x=st.tx*TS+8,y=st.ty*TS+8+bob;cx.fillStyle=P.ac;cx.shadowColor=P.ac;cx.shadowBlur=6;cx.beginPath();cx.moveTo(x,y-5);cx.lineTo(x+2,y-1);cx.lineTo(x+5,y);cx.lineTo(x+2,y+2);cx.lineTo(x+3,y+5);cx.lineTo(x,y+3);cx.lineTo(x-3,y+5);cx.lineTo(x-2,y+2);cx.lineTo(x-5,y);cx.lineTo(x-2,y-1);cx.closePath();cx.fill();cx.shadowBlur=0});
+ rm.bats.forEach(function(b){var p=batPos(b,s.bt);drawBat(p.x,p.y,t)});
+ if(s.dead<=0||s.state!=="play")drawGhost(s.x-2,s.y-1,s.face,t,false);else if(s.dead>0)drawGhost(s.x-2,s.y-1,s.face,t,true);
+ if(s.hold&&s.dead<=0){var hx=s.x-1,hy=s.y-14;s.hold==="key"?drawKey(hx,hy):drawPint(hx,hy-1)}
+ s.part.forEach(function(p){rect(p.c,p.x,p.y,2,2)});
+ if(s.panic){cx.fillStyle="rgba(150,20,30,"+(.05+.04*Math.sin(t*.2))+")";cx.fillRect(0,0,PW,PH)}
+ cx.restore();
+ cx.fillStyle="rgba(0,0,0,.45)";cx.fillRect(0,0,PW,11);cx.fillStyle=P.ac;cx.font="8px 'Press Start 2P',monospace";cx.textBaseline="top";cx.fillText(rm.name.toUpperCase(),6,2);
+};
+/* ================= game 2: Labyrinth Chase, endless levels ================= */
+var MH=["########","#o.....#","#.###.#.","#.......","#.###.##","#.....#.","#####.#.","#####.# ","#####.# ","      . ","#####.# ","#####.# ","#####.#.","#.......","#.###.##","#o..#...","##.#.#.#","#......#","########"];
+function mirrorRow(r){return r+r.slice(0,7).split("").reverse().join("")}
+var MT0=MH.map(mirrorRow),MZ=MT0,MC=15,MR=MH.length,MT=16,MZC={};
+var LN=["The Beer Cellar","Niddry Street","The Vaults","The Cowgate","The Grassmarket","Mary King's Close","Greyfriars","Castlehill","The Deep Vaults","The Royal Mile"];
+var DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+function RNG(seed){var a=(seed*2654435761)>>>0;return function(){a=(a+0x6D2B79F5)|0;var t=Math.imul(a^(a>>>15),1|a);t=(t+Math.imul(t^(t>>>7),61|t))^t;return((t^(t>>>14))>>>0)/4294967296}}
+function carveBand(M,R,ys){var xs=[1,3,5,7],seen={},sx=xs[Math.floor(R()*4)],sy=ys[Math.floor(R()*3)],st=[[sx,sy]];seen[sx+","+sy]=1;M[sy][sx]=true;
+ while(st.length){var c=st[st.length-1],nb=[];[[2,0],[-2,0],[0,2],[0,-2]].forEach(function(d){var nx=c[0]+d[0],ny=c[1]+d[1];if(nx>=1&&nx<=7&&ys.indexOf(ny)>=0&&!seen[nx+","+ny])nb.push([nx,ny,d])});
+  if(!nb.length){st.pop();continue}
+  var n=nb[Math.floor(R()*nb.length)];seen[n[0]+","+n[1]]=1;M[n[1]][n[0]]=true;M[c[1]+n[2][1]/2][c[0]+n[2][0]/2]=true;st.push([n[0],n[1]])}
+ for(var y=ys[0];y<=ys[2];y++)for(var x=0;x<=7;x++)M[y][14-x]=M[y][x]}
+function genMaze(L){
+ if(MZC[L])return MZC[L];
+ if(L<=1)return MZC[L]=MT0;
+ var res=null,tr,x,y;
+ for(tr=0;tr<150&&!res;tr++){
+  var R=RNG(L*7919+tr*104729+13),M=[];
+  for(y=0;y<MR;y++){M.push([]);for(x=0;x<MC;x++)M[y].push(y>=6&&y<=12?MT0[y][x]!=="#":false)}
+  carveBand(M,R,[1,3,5]);carveBand(M,R,[13,15,17]);
+  var inBand=function(yy){return (yy>=1&&yy<=5)||(yy>=13&&yy<=17)};
+  var loopP=Math.max(.08,.55-L*.035),deadKeep=Math.min(.55,Math.max(0,(L-5)*.07));
+  var cells=[];[1,3,5,13,15,17].forEach(function(cy){[1,3,5,7,9,11,13].forEach(function(cx2){cells.push([cx2,cy])})});
+  cells.forEach(function(c){if(!M[c[1]][c[0]])return;var cnt=0,cand=[];DIRS.forEach(function(d){if(mzOpenM(M,c[0]+d[0],c[1]+d[1]))cnt++;else{var px=c[0]+d[0],py=c[1]+d[1],nx=c[0]+2*d[0],ny=c[1]+2*d[1];if(inBand(py)&&inBand(ny)&&(c[1]<=5)===(ny<=5)&&nx>=1&&nx<=13&&M[ny][nx])cand.push([px,py])}});
+   if(cnt<=1&&cand.length&&R()>=deadKeep){var p=cand[Math.floor(R()*cand.length)];M[p[1]][p[0]]=true;M[p[1]][14-p[0]]=true}});
+  for(y=1;y<=17;y++)for(x=1;x<=13;x++){if(M[y][x]||!inBand(y))continue;var hz=(x%2===0&&y%2===1),vt=(x%2===1&&y%2===0);
+   if(hz&&M[y][x-1]&&M[y][x+1]&&R()<loopP){M[y][x]=true;M[y][14-x]=true}
+   else if(vt&&inBand(y-1)&&inBand(y+1)&&(y-1<=5)===(y+1<=5)&&M[y-1][x]&&M[y+1][x]&&R()<loopP){M[y][x]=true;M[y][14-x]=true}}
+  /* validate */
+  var tot=0,seen2={},q=[[7,13]],h=0;seen2["7,13"]=1;
+  for(y=0;y<MR;y++)for(x=0;x<MC;x++)if(M[y][x])tot++;
+  while(h<q.length){var cc=q[h++];DIRS.forEach(function(d){var nx=((cc[0]+d[0])%MC+MC)%MC,ny=cc[1]+d[1];if(ny<0||ny>=MR||!M[ny][nx]||seen2[nx+","+ny])return;seen2[nx+","+ny]=1;q.push([nx,ny])})}
+  if(q.length!==tot||tot<100)continue;
+  var pel=L<5?4:L<9?2:1,pp=[[1,1],[13,17],[13,1],[1,17]].slice(0,pel),rows=[];
+  for(y=0;y<MR;y++){var row="";for(x=0;x<MC;x++){row+=!M[y][x]?"#":(y>=6&&y<=12?MT0[y][x]:".")}rows.push(row)}
+  pp.forEach(function(p){rows[p[1]]=rows[p[1]].slice(0,p[0])+"o"+rows[p[1]].slice(p[0]+1)});
+  res=rows}
+ return MZC[L]=res||MT0}
+function mzOpenM(M,x,y){return y>=0&&y<MR&&x>=0&&x<MC&&M[y][x]}
+var MX=null;
+function mWall(x,y){if(y<0||y>=MR)return true;x=((x%MC)+MC)%MC;return MZ[y][x]==="#"}
+function mNew(level,keep){MZ=genMaze(level);var s={lvl:level,dots:[],left:0,pl:{x:7,y:13,dx:0,dy:0,f:0,want:[0,0],face:[1,0]},en:[],pow:0,score:keep?keep.score:0,lives:keep?keep.lives:3,t:0,state:"play",eat:0,fz:0,msg:"",pop:[],anim:0};
+ for(var y=0;y<MR;y++){s.dots.push([]);for(var x=0;x<MC;x++){var c=MZ[y][x],v=0;if(c==="."&&!(y===9)&&!(y>=7&&y<=11&&x===7))v=1;if(c==="o")v=2;if(y===9&&(x===5||x===9))v=1;if(v)s.left++;s.dots[y].push(v)}}
+ mEnemies(s);return s}
+function mEnemies(s){var L=s.lvl,n=L<2?3:L<5?4:L<9?5:6,st=[[6,9],[8,9],[7,7],[7,11],[5,9],[9,9]],ty=["chase","ambush","wander","shy","flank","chase"],cols=["#e0707a","#c46ae0","#e0a050","#6ac0e0","#7ad0a0","#f08a3a"];
+ s.en=st.slice(0,n).map(function(p,i){return {x:p[0],y:p[1],dx:0,dy:0,f:0,home:p,type:ty[i],col:cols[i],rel:Math.max(8,40+i*70-L*10),out:false,dead:0}})}
+function dirOpen(x,y,d){return !mWall(x+d[0],y+d[1])}
+function mWrap(o){if(o.x<0)o.x+=MC;if(o.x>=MC)o.x-=MC}
+function nearOpen(x,y){x=((Math.round(x)%MC)+MC)%MC;y=Math.max(0,Math.min(MR-1,Math.round(y)));for(var r=0;r<9;r++)for(var dy=-r;dy<=r;dy++)for(var dx=-r;dx<=r;dx++)if(Math.max(Math.abs(dx),Math.abs(dy))===r){var yy=y+dy;if(yy>=0&&yy<MR&&!mWall(x+dx,yy))return [((x+dx)%MC+MC)%MC,yy]}return [7,13]}
+function bfsMap(t){var d=[],y;for(y=0;y<MR;y++)d.push(new Array(MC).fill(999));var q=[t],h=0;d[t[1]][t[0]]=0;
+ while(h<q.length){var c=q[h++];DIRS.forEach(function(dd){var nx=((c[0]+dd[0])%MC+MC)%MC,ny=c[1]+dd[1];if(ny<0||ny>=MR||mWall(nx,ny)||d[ny][nx]<999)return;d[ny][nx]=d[c[1]][c[0]]+1;q.push([nx,ny])})}return d}
+var MZG=GAMES.mz={abtn:"",stick:true,keys:"Joystick, arrow keys or WASD to steer, or swipe on the maze.",
+ init:function(){curAct="";P=PUBS[pub];document.documentElement.dataset.pub=pub;MX=mNew(1,null);MX.state="ready";cv.width=MC*MT;cv.height=MR*MT;sizeCv();hint("Eat every hop. Golden pints let you catch the bar flies.");this.hudUpd();
+  overlay("LABYRINTH CHASE","Gobble all the hops. Avoid the bar flies, unless you have a golden pint. Every level is a new maze, and each one is trickier.","PLAY",function(){MX.state="play";beep(440,.1)})},
+ recolor:function(){},
+ hudUpd:function(){var s=MX;hud("<span class=\"l\">"+"♥".repeat(Math.max(0,s.lives))+"</span><span>SCORE <b>"+s.score+"</b></span><span>LEVEL <b>"+s.lvl+"</b></span>")},
+ press:function(k){if(!MX||MX.state!=="play")return;var m={l:[-1,0],r:[1,0],u:[0,-1],d:[0,1]}[k];if(m)MX.pl.want=m}
+};
+cv.addEventListener("pointerdown",function(e){cv._sx=e.clientX;cv._sy=e.clientY});
+cv.addEventListener("pointerup",function(e){if(G!==MZG||cv._sx==null)return;var dx=e.clientX-cv._sx,dy=e.clientY-cv._sy;if(Math.max(Math.abs(dx),Math.abs(dy))>18){MZG.press(Math.abs(dx)>Math.abs(dy)?(dx>0?"r":"l"):(dy>0?"d":"u"))}cv._sx=null});
+function mMove(o,sp,choose){
+ if(o.dx||o.dy){o.f+=sp;if(o.f>=1){o.x+=o.dx;o.y+=o.dy;mWrap(o);o.f-=1;choose(o);if(!(o.dx||o.dy))o.f=0}}
+ else{choose(o);o.f=0}}
+function mChoose(s,o){var p=s.pl,L=s.lvl,sc=s.pow>0;
+ var opts=DIRS.filter(function(d){return dirOpen(o.x,o.y,d)&&!(d[0]===-o.dx&&d[1]===-o.dy&&(o.dx||o.dy))});if(!opts.length)opts=DIRS.filter(function(d){return dirOpen(o.x,o.y,d)});
+ var rand=sc||Math.random()<Math.max(.01,.07-L*.004);
+ var tgt=[p.x,p.y];
+ if(o.type==="ambush")tgt=nearOpen(p.x+p.face[0]*4,p.y+p.face[1]*4);
+ else if(o.type==="wander"){if(Math.random()<Math.max(.12,.4-L*.02))rand=true}
+ else if(o.type==="shy"){if(Math.hypot(o.x-p.x,o.y-p.y)<6)tgt=nearOpen(1,17)}
+ else if(o.type==="flank"){var ch=s.en[0];tgt=nearOpen(2*p.x-ch.x,2*p.y-ch.y)}
+ var pick;
+ if(rand)pick=opts[Math.floor(Math.random()*opts.length)];
+ else if(L>=3&&Math.random()<Math.min(.97,.5+L*.05)){var dm=bfsMap(tgt),bd=1e9;opts.forEach(function(d){var nx=((o.x+d[0])%MC+MC)%MC,ny=o.y+d[1],v=dm[ny]?dm[ny][nx]:999;if(v<bd){bd=v;pick=d}})}
+ else{var bd2=1e9;opts.forEach(function(d){var dd=Math.hypot(o.x+d[0]-tgt[0],o.y+d[1]-tgt[1]);if(dd<bd2){bd2=dd;pick=d}})}
+ if(!pick)pick=opts[0];
+ o.dx=pick[0];o.dy=pick[1]}
+MZG.update=function(){var s=MX;if(!s||s.state!=="play"){if(s)s.anim++;return}s.t++;s.anim++;
+ if(s.fz>0){s.fz--;if(s.fz===0){if(s.lives<=0){s.state="over";setBest("mz",s.score);overlay("GAME OVER","You scored "+s.score+" and reached level "+s.lvl+".<br>The bar flies win this round.","TRY AGAIN",function(){MZG.init()});return}var n=mNew(s.lvl,{score:s.score,lives:s.lives});n.dots=s.dots;n.left=s.left;n.t=200;MX=n;MZG.hudUpd()}return}
+ var p=s.pl,L=s.lvl,spd=Math.min(.15,.105+L*.0025),pw=s.pow>0;
+ var want=p.want;
+ if((want[0]||want[1])&&(p.dx||p.dy)&&want[0]===-p.dx&&want[1]===-p.dy){p.x+=p.dx;p.y+=p.dy;mWrap(p);p.f=1-p.f;p.dx=want[0];p.dy=want[1];p.x-=p.dx;p.y-=p.dy;mWrap(p);p.face=[p.dx,p.dy]}
+ mMove(p,spd,function(o){if((want[0]||want[1])&&dirOpen(o.x,o.y,want)){o.dx=want[0];o.dy=want[1];o.face=[o.dx,o.dy]}else if(o.dx||o.dy){if(!dirOpen(o.x,o.y,[o.dx,o.dy])){o.dx=0;o.dy=0}}});
+ var px=Math.round(p.x+p.dx*p.f),py=Math.round(p.y+p.dy*p.f);px=((px%MC)+MC)%MC;
+ var dv=s.dots[py]&&s.dots[py][px];
+ if(dv){s.dots[py][px]=0;s.left--;if(dv===1){s.score+=10;beep(p.anim%2?330:380,.04,"square",.025)}else{s.score+=50;s.pow=Math.max(150,430-L*22);s.eat=0;beep(200,.3,"sawtooth",.05)}MZG.hudUpd();
+  if(s.left<=0){s.state="clear";s.score+=100;beep(880,.2);setTimeout(function(){beep(1100,.3)},200);var lv=s.lvl,nl=s.lives+(lv%4===0&&s.lives<5?1:0);
+   overlay("LEVEL "+lv+" CLEAR","Score "+s.score+(nl>s.lives?"<br>Bonus life!":""),"NEXT LEVEL",function(){var go=function(){MX=mNew(lv+1,{score:s.score,lives:nl});MZG.hudUpd()};var st=nextStory();if(st)readStory(st.id,go);else go()});return}}
+ if(s.pow>0)s.pow--;
+ s.en.forEach(function(e,i){
+  if(e.dead>0){e.dead--;if(e.dead===0){e.x=e.home[0];e.y=e.home[1];e.dx=e.dy=0;e.f=0;e.rel=30}return}
+  if(e.rel>0){e.rel--;return}
+  var sc=s.pow>0,es=sc?.062:Math.min(.16,.082+L*.0045);
+  mMove(e,es,function(o){mChoose(s,o)});
+  var ex=e.x+e.dx*e.f,ey=e.y+e.dy*e.f,ppx=p.x+p.dx*p.f,ppy=p.y+p.dy*p.f;var dxx=Math.abs(ex-ppx);dxx=Math.min(dxx,MC-dxx);
+  if(dxx<.6&&Math.abs(ey-ppy)<.6){if(sc){e.dead=140;s.eat++;var pts=100*Math.pow(2,s.eat);s.score+=pts;s.pop.push({x:ex,y:ey,t:45,v:pts});beep(700,.15);MZG.hudUpd()}else{s.lives--;s.fz=90;beep(160,.5,"sawtooth",.06);MZG.hudUpd()}}
+ });
+ s.pop=s.pop.filter(function(q){return--q.t>0});
+ hint(s.pow>0?"Golden pint! Catch the bar flies!":(s.t<170?"Level "+s.lvl+": "+LN[(s.lvl-1)%LN.length]:""));
+};
+MZG.draw=function(){var s=MX;if(!s)return;cx.fillStyle="#05080a";cx.fillRect(0,0,cv.width,cv.height);
+ cx.strokeStyle=P.ac;cx.lineWidth=2;cx.shadowColor=P.ac;cx.shadowBlur=5;
+ for(var y=0;y<MR;y++)for(var x=0;x<MC;x++)if(MZ[y][x]==="#"){var X=x*MT,Y=y*MT;cx.fillStyle=P.dk;cx.fillRect(X+1,Y+1,MT-2,MT-2);
+  cx.beginPath();if(!mWall(x,y-1)&&y>0){cx.moveTo(X+1,Y+1);cx.lineTo(X+MT-1,Y+1)}if(!mWall(x,y+1)&&y<MR-1){cx.moveTo(X+1,Y+MT-1);cx.lineTo(X+MT-1,Y+MT-1)}if(x>0&&!mWall(x-1,y)){cx.moveTo(X+1,Y+1);cx.lineTo(X+1,Y+MT-1)}if(x<MC-1&&!mWall(x+1,y)){cx.moveTo(X+MT-1,Y+1);cx.lineTo(X+MT-1,Y+MT-1)}cx.stroke()}
+ cx.shadowBlur=0;
+ for(y=0;y<MR;y++)for(x=0;x<MC;x++){var v=s.dots[y][x];if(v===1){cx.fillStyle="#e6c97a";cx.fillRect(x*MT+7,y*MT+7,3,3)}else if(v===2){cx.fillStyle="#fff3d0";cx.fillRect(x*MT+4,y*MT+3,8,2);cx.fillStyle="#ffd36a";cx.fillRect(x*MT+4,y*MT+5,8,8);cx.fillStyle="rgba(255,255,255,.4)";cx.fillRect(x*MT+5,y*MT+5,1,6)}}
+ var p=s.pl,gx=(p.x+p.dx*p.f)*MT,gy=(p.y+p.dy*p.f)*MT,w=Math.floor(s.anim/6)%2;
+ if(!(s.fz>0&&Math.floor(s.anim/5)%2)){cx.save();cx.translate(gx,gy);cx.shadowColor=P.ac;cx.shadowBlur=10;cx.fillStyle="#e8f4f1";cx.beginPath();cx.moveTo(2,15);cx.lineTo(2,7);cx.arc(8,7,6,Math.PI,0);cx.lineTo(14,15);cx.lineTo(12,13+w);cx.lineTo(10,15);cx.lineTo(8,13+(1-w));cx.lineTo(6,15);cx.lineTo(4,13+w);cx.closePath();cx.fill();cx.shadowBlur=0;
+  var fx=p.face[0]*1.5,fy=p.face[1]*1.5;cx.fillStyle="#0b0e10";cx.fillRect(5+fx,6+fy,2,3);cx.fillRect(9+fx,6+fy,2,3);cx.restore()}
+ s.en.forEach(function(e){if(e.dead>0)return;var ex=(e.x+e.dx*e.f)*MT,ey=(e.y+e.dy*e.f)*MT,sc=s.pow>0,fl=s.pow>0&&s.pow<110&&Math.floor(s.anim/6)%2,col=sc?(fl?"#ffffff":"#3a64c8"):e.col,wf=Math.floor(s.anim/3)%2;
+  cx.save();cx.translate(ex,ey);cx.fillStyle=sc?"rgba(150,190,255,.7)":"rgba(255,255,255,.45)";cx.fillRect(1,wf?2:4,5,5);cx.fillRect(10,wf?2:4,5,5);cx.fillStyle=col;cx.beginPath();cx.arc(8,9,6,0,Math.PI*2);cx.fill();cx.fillRect(3,12,10,3);cx.fillStyle=sc?"#fff":"#0b0e10";cx.fillRect(5,7,2,3);cx.fillRect(9,7,2,3);if(sc){cx.fillStyle="#fff";cx.fillRect(5,12,6,1)}cx.restore()});
+ s.pop.forEach(function(q){cx.fillStyle="#ffd36a";cx.font="8px 'Press Start 2P',monospace";cx.textBaseline="top";cx.fillText(String(q.v),q.x*MT-4,q.y*MT-6-(45-q.t)/6)});
+};
+/* ================= game 3: Old Town Quest ================= */
+var QD=[
+ {id:"rose",ls:"r",ll:[55.9520,-3.1985],nm:"The Black Rose",lab:"BLACK ROSE",pin:[112,24],ld:"r",ab:"br",item:"key",it:"cellar key",tx:11,ty:4,story:null,
+  intro:"The way to the Old Town starts in the cellar. Find the cellar key on the high ledges, then ask the door.",
+  r:{q:"The cellar door wants to know which street the Black Rose stands on. It is number 49.",o:["Rose Street","Niddry Street","The Grassmarket"],ok:0,h:"Think of a flower."},
+  lay:{plats:[[8,3,6],[5,8,12]]},end:"The door opens onto the stair down. Follow it through the Old Town to the Banshee Labyrinth."},
+ {id:"well",ls:"l",ll:[55.9486,-3.1993],nm:"Castlehill",lab:"WITCHES' WELL",pin:[72,84],ld:"r",ab:"bl",item:"lantern",it:"lantern",tx:14,ty:4,story:"well",
+  intro:"It is dark on the Castle esplanade. Find the lantern, then ask the gate by the well.",
+  r:{q:"I am small and bronze and easy to miss. I stand at the Castle's foot, and for hundreds who were burned as witches I am the only marker. What am I?",o:["The Witches' Well","The Maiden","The Mercat Cross"],ok:0,h:"Something with water, and a monument rather than a machine."},
+  lay:{spikes:[[10,5,6]],plats:[[8,8,10],[5,12,15]],bats:[{cx:215,cy:120,ax:30,ay:14,sp:.04,ph:1}]}},
+ {id:"grass",ls:"l",ll:[55.9476,-3.1960],nm:"The Grassmarket",lab:"GRASSMARKET",pin:[96,142],ld:"b",ab:"bl",item:"rope",it:"rope",tx:10,ty:4,story:"maggie",
+  intro:"The Grassmarket was where the gallows stood. Fetch the rope, then ask the door.",
+  r:{q:"I was hanged here in 1724 and woke up in my coffin on the road to burial. The law could not hang me twice. Who am I?",o:["Half-Hangit Maggie","Agnes Sampson","Mary King"],ok:0,h:"Her nickname tells you what went wrong with the hanging."},
+  lay:{plats:[[8,4,7],[6,9,11],[8,13,15]],bats:[{cx:100,cy:70,ax:50,ay:14,sp:.035,ph:0},{cx:210,cy:100,ax:30,ay:16,sp:.04,ph:2}]}},
+ {id:"bow",ls:"r",ll:[55.9487,-3.1953],nm:"The West Bow",lab:"WEST BOW",pin:[108,118],ld:"r",ab:"bl",item:"stick",it:"walking stick",tx:12,ty:2,story:"weir",
+  intro:"The West Bow climbs steeply from the Grassmarket. Climb the steps and fetch the walking stick.",
+  r:{q:"I led the city in prayer, then confessed to terrible crimes in 1670. They say my walking stick still walks on its own. Who am I?",o:["Major Weir","Deacon Brodie","Sir George Mackenzie"],ok:0,h:"Not the man whose double life inspired Jekyll and Hyde."},
+  lay:{plats:[[9,3,4],[7,6,7],[5,9,10],[3,12,13]],bats:[{cx:150,cy:90,ax:40,ay:16,sp:.04,ph:0}]}},
+ {id:"grey",ls:"r",ll:[55.9470,-3.1926],nm:"Greyfriars Kirkyard",lab:"GREYFRIARS",pin:[156,184],ld:"r",ab:"bl",item:"bar",it:"iron bar",tx:15,ty:4,story:"resurrection",
+  intro:"Greyfriars at night. The resurrection men are coming. Find the iron bar and mind the spikes.",
+  r:{q:"Families bolted me over fresh graves so grave robbers could not dig. What iron cage am I?",o:["A mortsafe","The branks","The jougs"],ok:0,h:"Mort means death. The rest says what it does."},
+  lay:{spikes:[[10,3,4],[10,8,9]],plats:[[8,5,6],[8,11,12],[5,14,16]],bats:[{cx:130,cy:80,ax:50,ay:14,sp:.04,ph:0},{cx:240,cy:60,ax:40,ay:12,sp:.045,ph:2}]}},
+ {id:"banshee",ls:"l",ll:[55.94865,-3.18700],nm:"Niddry Street",lab:"THE BANSHEE",pin:[224,144],ld:"r",ab:"bl",item:"candle",it:"candle",tx:12,ty:3,story:"banshee",
+  intro:"Niddry Street, and the Banshee Labyrinth below it. Light the way: find the candle.",
+  r:{q:"In Irish folklore my scream warns that someone is about to die. What am I?",o:["A banshee","A kelpie","A brownie"],ok:0,h:"It is on the sign outside the door."},
+  lay:{spikes:[[10,6,7]],plats:[[8,3,5],[6,7,9],[4,11,13],[7,15,16]],bats:[{cx:120,cy:100,ax:50,ay:18,sp:.04,ph:0},{cx:230,cy:80,ax:30,ay:14,sp:.05,ph:2}]}}
+];
+var OS=[
+ {id:"art",ls:"r",off:1,nm:"Auld Reekie Tours",ad:"45 Niddry Street, Edinburgh EH1 1LG",ll:[55.94895,-3.18690],tx:"Underground vaults and ghost tours, just along Niddry Street from the Banshee."},
+ {id:"dun",ls:"l",nm:"The Edinburgh Dungeon",ad:"31 Market Street, Edinburgh EH1 1DF",ll:[55.95125,-3.18835],tx:"A live-actor walk through Edinburgh's darkest history."}];
+var QS=null,RM=null,RMK=[];
+function walkMin(a,b){var R=6371000,r=Math.PI/180,dl=(b[0]-a[0])*r,dg=(b[1]-a[1])*r,h=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dg/2)*Math.sin(dg/2),m=2*R*Math.asin(Math.sqrt(h))*1.3;return Math.max(1,Math.round(m/80))}
+function homeLL(){return pub==="br"?QD[0].ll:QD[5].ll}
+function showStop(o){var wm=walkMin(homeLL(),o.ll),from=pub==="br"?"the Black Rose":"the Banshee";
+ showModal("<div class=\"tag\">NEARBY</div><h3>"+o.nm+"</h3><p>"+o.tx+"</p><div class=\"sub\">"+o.ad+"<br>About "+wm+" min walk from "+from+".</div><a class=\"go lnk\" href=\"https://www.google.com/maps/dir/?api=1&destination="+encodeURIComponent(o.ad)+"&travelmode=walking\" target=\"_blank\" rel=\"noopener\">Get walking directions</a>","CLOSE")}
+function rmOk(){if(typeof L==="undefined")return false;var t=document.createElement("div");t.className="leaflet-container";t.style.cssText="position:absolute;left:-99px;width:1px;height:1px";document.body.appendChild(t);var ok=getComputedStyle(t).overflow==="hidden";document.body.removeChild(t);return ok}
+function rmShow(on){var el=$("#rmap");if(!on){if(el)el.style.display="none";return}
+ if(!RM){el=document.createElement("div");el.id="rmap";$("#stage").appendChild(el);RM=L.map(el,{zoomControl:true,attributionControl:true});L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:"&copy; OpenStreetMap contributors"}).addTo(RM);
+  var pts=QD.map(function(d){return d.ll}).concat(OS.map(function(o){return o.ll}));RM.fitBounds(pts,{padding:[26,26]})}
+ el.style.display="block";setTimeout(function(){RM.invalidateSize()},50);rmDraw()}
+function rmDraw(){if(!RM)return;RMK.forEach(function(m){RM.removeLayer(m)});RMK=[];var nx=qNext();
+ QD.forEach(function(d,i){var done=QS.done.indexOf(d.id)>=0,cls=done?"done":i<=nx?"next":"lock";if(i===QS.sel)cls+=" sel";
+  var m=L.marker(d.ll,{icon:L.divIcon({className:"mk "+d.ls+" "+cls,html:"<i>"+(done?"&#10003;":i+1)+"</i>"+(i===QS.sel?"<b>"+d.lab+"</b>":""),iconSize:[26,26],iconAnchor:[13,13]})}).addTo(RM);m.on("click",function(){if(QS.sel===i)qPick(i);else{QS.sel=i;rmDraw();hint(d.nm+". Tap the pin again to go in.")}});RMK.push(m)});
+ OS.forEach(function(o){var m=L.marker(o.ll,{icon:L.divIcon({className:"mk stop "+o.ls,html:"<i>&#9873;</i>",iconSize:[26,26],iconAnchor:o.off?[13,40]:[13,13]})}).addTo(RM);m.on("click",function(){showStop(o)});RMK.push(m)})}
+function nbDraw(on){var nb=$("#nb");nb.innerHTML="";nb.style.display=on?"flex":"none";if(!on)return;OS.forEach(function(o){var b=document.createElement("button");b.type="button";b.className="mini";b.textContent="Nearby: "+o.nm;b.onclick=function(){showStop(o)};nb.appendChild(b)})}
+function qRoom(d){var o=d.lay;return mkRoom(d.nm,d.ab,{walls:[[1,8,17,19]],door:[17,9,10],plats:o.plats||[],spikes:o.spikes||[],bats:o.bats||[],torches:[[2,3],[12,3]]})}
+function qNext(){for(var i=0;i<QD.length;i++)if(QS.done.indexOf(QD[i].id)<0)return i;return QD.length}
+function qSave(){ls("arc_qs",QS.done.join(","))}
+function qHud(){var s=QS;if(s.mode==="room"){var r=s.r;hud("<span>SCORE <b>"+s.score+"</b></span><span>CARRY <b>"+(r.hold?r.d.it.toUpperCase():"-")+"</b></span><span>PLACES <b>"+s.done.length+"/"+QD.length+"</b></span>")}else hud("<span>SCORE <b>"+s.score+"</b></span><span>PLACES <b>"+s.done.length+"/"+QD.length+"</b></span><span>BOOK <b>"+foundCount()+"/"+ST.length+"</b></span>")}
+function qMode(m){var s=QS;s.mode=m;K.l=K.r=K.u=K.d=K.a=0;
+ if(m==="map"){var real=rmOk();s.real=real;cv.width=320;cv.height=real?400:240;sizeCv();rmShow(real);$("#abtn").textContent="GO";s.sel=Math.min(qNext(),QD.length-1);setAct(pub);hint("Tap a glowing pin, or use the stick and GO.");qHud();nbDraw(true)}
+ else{rmShow(false);nbDraw(false);var d=s.r.d;cv.width=PW;cv.height=PH;sizeCv();$("#abtn").textContent="JUMP";RMS=[s.r.rm];setAct(d.ab);qHud()}}
+function qEnter(i){var s=QS,d=QD[i],rm=qRoom(d);
+ s.r={d:d,i:i,rm:rm,room:0,x:24,y:PH-TS-14,vx:0,vy:0,ground:false,face:1,doorOpen:false,hold:null,itemGot:false,anim:0,t:0,bt:0,dead:0,msg:"",mt:0,part:[],asking:false,modal:true,sx:24,sy:PH-TS-14,coy:0,jb:0,time:0};
+ qMode("room");showModal("<div class=\"tag\">QUEST</div><h3>"+d.nm+"</h3><p>"+d.intro+"</p>","GO",function(){s.r.modal=false})}
+function qPick(i){var s=QS;if(i>qNext()){beep(150,.15,"square",.04);hint("Finish the earlier places first.");return}
+ var d=QD[i];s.sel=i;if(s.done.indexOf(d.id)>=0){if(d.story)readStory(d.story,qHud);else showModal("<div class=\"tag\">QUEST</div><h3>"+d.nm+"</h3><p>"+d.end+"</p>","CLOSE");return}qEnter(i)}
+function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+function showRiddle(d,wrong,onOk,onCancel){var o=shuf(d.r.o.map(function(t,i){return {t:t,ok:i===d.r.ok}}));
+ var h="<div class=\"tag\">THE DOOR ASKS</div><h3>Answer the riddle</h3><p>"+d.r.q+"</p>"+(wrong?"<div class=\"sub\">Not quite. The door stays shut. Try again.</div>":"")+"<div class=\"opts\">"+o.map(function(x,i){return "<button type=\"button\" class=\"opt\" data-i=\""+i+"\">"+x.t+"</button>"}).join("")+"</div><button type=\"button\" class=\"hnt\">Need a hint?</button><div class=\"sub\" id=\"hh\"></div>";
+ sm.innerHTML="<div class=\"c\">"+h+"</div>";sm.style.display="flex";smFn=onCancel;
+ [].forEach.call(sm.querySelectorAll(".opt"),function(b){b.onclick=function(){if(o[+b.dataset.i].ok){sm.style.display="none";smFn=null;onOk()}else{beep(140,.25,"sawtooth",.05);showRiddle(d,true,onOk,onCancel)}}});
+ sm.querySelector(".hnt").onclick=function(){$("#hh").textContent=d.r.h}}
+function qDone(){var s=QS,r=s.r,d=r.d;r.modal=true;if(s.done.indexOf(d.id)<0){s.done.push(d.id);qSave();s.score+=300;setBest("qs",s.score)}
+ var back=function(){r.modal=false;qMode("map");if(s.done.length===QD.length&&!s.fin){s.fin=1;showModal("<div class=\"tag\">QUEST</div><h3>That's the map for now</h3><p>You have reached the Banshee Labyrinth. More places and more stories are being added around the Old Town, so check back soon. If you want to keep exploring, the Nearby buttons under the map show the way to Auld Reekie Tours and The Edinburgh Dungeon.</p>","CLOSE")}};
+ if(d.story)readStory(d.story,back);else showModal("<div class=\"tag\">QUEST</div><h3>The way opens</h3><p>"+d.end+"</p>","TO THE MAP",back)}
+var QSG=GAMES.qs={abtn:"GO",stick:true,keys:"Tap pins on the map. In the rooms: joystick or arrow keys to move, Up, Space or JUMP to jump.",
+ init:function(){QS={mode:"map",sel:0,score:0,done:(ls("arc_qs")||"").split(",").filter(function(x){return x&&QD.some(function(d){return d.id===x})}),r:null,fin:0};
+  if(pub==="bl"&&QS.done.indexOf("rose")<0)QS.done.push("rose");
+  RMS=PR;cv.width=320;cv.height=240;sizeCv();qMode("map");var has=QS.done.length>(pub==="bl"?1:0);
+  overlay("OLD TOWN QUEST",pub==="br"?"Start at the Black Rose on Rose Street, then work your way across the Old Town to the Banshee Labyrinth. Every place hides an item and a riddle door. Solve them to unlock the stories.":"Work your way across the Old Town to the Banshee Labyrinth. Every place hides an item and a riddle door. Solve them to unlock the stories.",has?"CONTINUE":"PLAY",function(){beep(440,.1)});
+  if(has){var b=document.createElement("button");b.textContent="START OVER";b.onclick=function(){ls("arc_qs","");QSG.init()};$("#ov").appendChild(b)}},
+ recolor:function(){},hudUpd:function(){qHud()},
+ press:function(k){var s=QS;if(!s||s.mode!=="map"||sm.style.display==="flex"||$("#ov").style.display!=="none")return;
+  if(k==="l"||k==="u")s.sel=(s.sel+QD.length-1)%QD.length;else if(k==="r"||k==="d")s.sel=(s.sel+1)%QD.length;else if(k==="a")qPick(s.sel);if(s.real)rmDraw();beep(520,.04,"square",.02)},
+ tap:function(x,y){var s=QS;if(!s||s.mode!=="map"||sm.style.display==="flex")return;var bi=-1,bd=30;QD.forEach(function(d,i){var dd=Math.hypot(d.pin[0]-x,d.pin[1]-y);if(dd<bd){bd=dd;bi=i}});if(bi>=0)qPick(bi)}
+};
+cv.addEventListener("pointerup",function(e){if(G!==QSG||!QS||QS.mode!=="map")return;var r=cv.getBoundingClientRect();QSG.tap((e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height)});
+QSG.update=function(){var s=QS;if(!s)return;if(s.mode==="map"){s.anim=(s.anim||0)+1;return}
+ var r=s.r,d=r.d;r.anim++;if(r.modal)return;r.t++;r.bt++;
+ if(r.dead>0){r.dead--;if(r.dead===0){r.x=r.sx;r.y=r.sy;r.vy=0}return}
+ plStep(r,{l:K.l,r:K.r,j:K.u||K.a,jp:KP.u||KP.a},false);
+ var die=hitsSpike(r);r.rm.bats.forEach(function(b){var p=batPos(b,r.bt);if(r.x+9>p.x-5&&r.x+1<p.x+5&&r.y+13>p.y-3&&r.y+1<p.y+4)die=true});
+ if(die){r.dead=50;beep(130,.35,"sawtooth",.05);for(var i=0;i<14;i++)r.part.push({x:r.x+5,y:r.y+7,vx:rnd(-2,2),vy:rnd(-3,1),l:30,c:"#e8f4f1"});return}
+ if(!r.itemGot){var ix=d.tx*TS+2,iy=d.ty*TS+2;if(r.x+10>ix&&r.x<ix+12&&r.y+14>iy&&r.y<iy+14){r.itemGot=true;r.hold=d.item;s.score+=100;beep(660,.1);beep(990,.15);r.msg="You found the "+d.it+"!";r.mt=140;qHud()}}
+ var near=!r.doorOpen&&r.x+10>=17*TS-3&&r.y>8*TS;
+ if(near){if(r.hold===d.item){if(!r.asking){r.asking=true;r.modal=true;showRiddle(d,false,function(){r.doorOpen=true;r.hold=null;s.score+=200;beep(300,.2,"triangle",.06);beep(450,.25,"triangle",.06);r.msg="The door swings open.";r.mt=140;r.modal=false;qHud()},function(){r.modal=false})}}else if(r.mt<=0){r.msg="The door needs the "+d.it+".";r.mt=100}}
+ else if(r.x<15*TS)r.asking=false;
+ if(r.doorOpen&&r.x+10>18*TS+2&&r.y>8*TS){qDone();return}
+ if(r.mt>0)r.mt--;
+ hint(r.mt>0?r.msg:(!r.itemGot?"Find the "+d.it+".":!r.doorOpen?"Take the "+d.it+" to the door on the right.":"Step through the open door."));
+ r.part=r.part.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.1;return--p.l>0})};
+function drawRelic(k,x,y){
+ if(k==="key")drawKey(x,y);
+ else if(k==="lantern"){rect("#8c6a1f",x+3,y,6,2);rect("#5a3a1a",x+2,y+2,8,1);rect("#ffd36a",x+3,y+3,6,7);rect("#fff3d0",x+4,y+4,4,4);rect("#5a3a1a",x+2,y+10,8,2)}
+ else if(k==="rope"){rect("#b89a62",x+1,y+3,10,8);rect("#6b5a36",x+3,y+5,6,4);rect("#b89a62",x+4,y+6,4,2);rect("#b89a62",x+10,y,2,4)}
+ else if(k==="stick"){rect("#7a4a22",x+5,y,3,12);rect("#a56a32",x+5,y,1,12);rect("#c9a23a",x+4,y,5,2)}
+ else if(k==="bar"){rect("#8a979a",x,y+4,12,4);rect("#cfd8d6",x,y+4,12,1);rect("#4a5558",x,y+7,12,1)}
+ else if(k==="candle"){rect("#fff3d0",x+4,y+4,4,8);rect("#c9a23a",x+3,y+11,6,2);rect("#ff8a2a",x+5,y,2,3);rect("#ffd36a",x+5,y+1,2,2)}}
+QSG.draw=function(){var s=QS;if(!s)return;if(s.mode==="map")return QSG.drawMap();
+ var r=s.r,rm=r.rm,t=r.anim;setAct(rm.pub);
+ var gr=cx.createLinearGradient(0,0,0,PH);gr.addColorStop(0,"#07090a");gr.addColorStop(1,P.dk);cx.fillStyle=gr;cx.fillRect(0,0,PW,PH);
+ cx.fillStyle="rgba(255,255,255,.035)";for(var a=0;a<5;a++){var ax=20+a*66;cx.beginPath();cx.arc(ax+16,70,22,Math.PI,0);cx.lineTo(ax+38,150);cx.lineTo(ax-6,150);cx.closePath();cx.fill()}
+ rm.torches.forEach(function(tc){var fx=tc[0]*TS+8,fy=tc[1]*TS+4,fl=Math.sin(t*.3+tc[0])*1.5;var rg=cx.createRadialGradient(fx,fy,2,fx,fy,50);rg.addColorStop(0,"rgba(255,170,60,.28)");rg.addColorStop(1,"rgba(255,170,60,0)");cx.fillStyle=rg;cx.fillRect(fx-50,fy-50,100,100);rect("#5a3a1a",fx-1,fy+4,3,8);rect("#ff8a2a",fx-2,fy-3+fl,5,7);rect("#ffd36a",fx-1,fy-1+fl,3,4)});
+ for(var y=0;y<RR;y++)for(var x=0;x<RC;x++){var ch=rm.g[y][x],X=x*TS,Y=y*TS;
+  if(ch==="#"){rect(P.br,X,Y,TS,TS);rect(P.br2,X,Y+7,TS,1);rect(P.br2,X,Y+15,TS,1);rect(P.br2,X+(y%2?4:11),Y,1,8);rect(P.br2,X+(y%2?11:4),Y+8,1,8);if(y>0&&rm.g[y-1][x]!=="#")rect(P.hi,X,Y,TS,2)}
+  else if(ch==="D"&&!r.doorOpen){rect("#5a3a1a",X,Y,TS,TS);rect("#3d2810",X+7,Y,2,TS);rect("#8a5a2a",X,Y,TS,1);rect("#ffd36a",X+11,Y+7,2,3)}
+  else if(ch==="^"){cx.fillStyle="#cfd8d6";for(var k=0;k<2;k++){cx.beginPath();cx.moveTo(X+k*8,Y+16);cx.lineTo(X+k*8+4,Y+7);cx.lineTo(X+k*8+8,Y+16);cx.fill()}}}
+ var bob=Math.sin(t*.1)*1.5;
+ if(!r.itemGot){var ix=r.d.tx*TS+2,iy=r.d.ty*TS+2+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,14);rg.addColorStop(0,"rgba(255,211,106,.4)");rg.addColorStop(1,"rgba(255,211,106,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);drawRelic(r.d.item,ix,iy)}
+ if(r.doorOpen){var sx=18*TS+2,sy=10*TS+1+bob;var rg2=cx.createRadialGradient(sx+6,sy+6,1,sx+6,sy+6,14);rg2.addColorStop(0,"rgba(232,217,176,.4)");rg2.addColorStop(1,"rgba(232,217,176,0)");cx.fillStyle=rg2;cx.fillRect(sx-8,sy-8,28,28);drawScroll(sx,sy)}
+ rm.bats.forEach(function(b){var p=batPos(b,r.bt);drawBat(p.x,p.y,t)});
+ if(r.dead<=0)drawGhost(r.x-2,r.y-1,r.face,t,false);else drawGhost(r.x-2,r.y-1,r.face,t,true);
+ if(r.hold&&r.dead<=0)drawRelic(r.hold,r.x-1,r.y-14);
+ r.part.forEach(function(p){rect(p.c,p.x,p.y,2,2)});
+ cx.fillStyle="rgba(0,0,0,.45)";cx.fillRect(0,0,PW,11);cx.fillStyle=P.ac;cx.font="8px 'Press Start 2P',monospace";cx.textBaseline="top";cx.fillText(rm.name.toUpperCase(),6,2)};
+function pline(pts,w,c,dash){cx.strokeStyle=c;cx.lineWidth=w;cx.setLineDash(dash||[]);cx.beginPath();pts.forEach(function(p,i){i?cx.lineTo(p[0],p[1]):cx.moveTo(p[0],p[1])});cx.stroke();cx.setLineDash([])}
+QSG.drawMap=function(){var s=QS,t=s.anim||0;
+ var gr=cx.createLinearGradient(0,0,0,240);gr.addColorStop(0,"#1c1912");gr.addColorStop(1,"#0e0c08");cx.fillStyle=gr;cx.fillRect(0,0,320,240);
+ cx.strokeStyle="rgba(232,217,176,.08)";cx.lineWidth=1;for(var gx=0;gx<320;gx+=20){cx.beginPath();cx.moveTo(gx,0);cx.lineTo(gx,240);cx.stroke()}for(var gy=0;gy<240;gy+=20){cx.beginPath();cx.moveTo(0,gy);cx.lineTo(320,gy);cx.stroke()}
+ /* New Town grid */
+ cx.fillStyle="rgba(232,217,176,.09)";for(var bx=40;bx<250;bx+=22)for(var by=6;by<36;by+=11)cx.fillRect(bx,by,18,8);
+ pline([[40,38],[236,56]],2,"rgba(232,217,176,.5)");pline([[40,24],[236,42]],1.5,"rgba(214,168,64,.7)");
+ /* gardens */
+ cx.fillStyle="rgba(70,120,90,.28)";cx.beginPath();cx.moveTo(44,46);cx.lineTo(214,62);cx.lineTo(206,80);cx.lineTo(104,80);cx.lineTo(62,70);cx.closePath();cx.fill();
+ /* castle rock */
+ cx.fillStyle="rgba(138,151,154,.35)";cx.strokeStyle="rgba(207,216,214,.6)";cx.lineWidth=1.5;cx.beginPath();cx.moveTo(44,94);cx.lineTo(50,66);cx.lineTo(84,62);cx.lineTo(98,80);cx.lineTo(90,98);cx.closePath();cx.fill();cx.stroke();
+ /* streets */
+ var RM=[[80,86],[112,92],[150,102],[190,112],[230,124],[290,140]];pline(RM,4,"rgba(214,168,64,.85)");
+ pline([[56,138],[130,142]],4,"rgba(232,217,176,.45)");pline([[130,142],[190,150],[240,158],[292,162]],3,"rgba(232,217,176,.35)");
+ pline([[196,112],[204,192]],2.5,"rgba(232,217,176,.45)");pline([[150,102],[156,192]],2.5,"rgba(232,217,176,.35)");pline([[104,92],[106,140]],2,"rgba(232,217,176,.35)",[4,3]);
+ cx.font="bold 8px system-ui,sans-serif";cx.textBaseline="middle";cx.lineJoin="round";
+ function lab(txt,x,y,c,al){cx.textAlign=al||"left";cx.lineWidth=3;cx.strokeStyle="#0b0a07";cx.strokeText(txt,x,y);cx.fillStyle=c||"#e8d9b0";cx.fillText(txt,x,y)}
+ lab("PRINCES ST GARDENS",96,70,"rgba(160,210,170,.8)");lab("ROYAL MILE",236,112,"rgba(214,168,64,.95)");lab("COWGATE",240,174,"rgba(232,217,176,.7)");lab("HOLYROOD",300,128,"rgba(232,217,176,.7)","right");lab("CASTLE",52,104,"rgba(207,216,214,.9)");lab("NEW TOWN",250,16,"rgba(232,217,176,.6)");lab("N",306,12,"#e8d9b0","center");
+ cx.strokeStyle="#e8d9b0";cx.lineWidth=1.5;cx.beginPath();cx.moveTo(306,18);cx.lineTo(306,34);cx.moveTo(302,22);cx.lineTo(306,17);cx.lineTo(310,22);cx.stroke();
+ lab("MARY KING'S CLOSE",172,92,"rgba(232,217,176,.35)","center");
+ /* pins */
+ var nx=qNext();
+ QD.forEach(function(d,i){var done=s.done.indexOf(d.id)>=0,open=i<=nx,x=d.pin[0],y=d.pin[1],pulse=(i===nx)?3+Math.sin(t*.12)*2:0,col=done?P.ac:open?"#ffd36a":"#5a6366";
+  if(i===s.sel){cx.strokeStyle="#fff";cx.lineWidth=1.5;cx.beginPath();cx.arc(x,y,11+pulse*.3,0,Math.PI*2);cx.stroke()}
+  if(open&&!done){cx.fillStyle="rgba(255,211,106,.2)";cx.beginPath();cx.arc(x,y,9+pulse,0,Math.PI*2);cx.fill()}
+  cx.fillStyle=col;cx.strokeStyle="#0b0a07";cx.lineWidth=2;cx.beginPath();cx.arc(x,y,6,0,Math.PI*2);cx.fill();cx.stroke();
+  if(done){cx.strokeStyle="#0b0a07";cx.lineWidth=2;cx.beginPath();cx.moveTo(x-3,y);cx.lineTo(x-1,y+3);cx.lineTo(x+3,y-3);cx.stroke()}
+  var ly=d.ld==="b"?y+13:y,lx=d.ld==="b"?x:x+11;lab(d.lab,lx,ly,done?"#e8f4f1":open?"#ffd36a":"#7a8487",d.ld==="b"?"center":"left")});
+ lab("49 Rose Street",118,36,"rgba(214,168,64,.8)");lab("29-35 Niddry Street",242,156,"rgba(79,184,168,.9)","center")};
+/* ---------- menu thumbnails ---------- */
+function drawThumbs(){$$("canvas[data-th]").forEach(function(c){var x=c.getContext("2d"),w=c.width,h=c.height;x.imageSmoothingEnabled=false;var g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,"#07090a");g.addColorStop(1,P.dk);x.fillStyle=g;x.fillRect(0,0,w,h);
+ if(c.dataset.th==="pl"){x.fillStyle=P.br;for(var i=0;i<6;i++)x.fillRect(i*16,h-10,16,10);x.fillRect(20,50,26,6);x.fillRect(56,34,24,6);x.fillStyle="#e8f4f1";x.beginPath();x.moveTo(8,h-10);x.lineTo(8,h-24);x.arc(14,h-24,6,Math.PI,0);x.lineTo(20,h-10);x.fill();x.fillStyle="#0b0e10";x.fillRect(11,h-26,2,3);x.fillRect(16,h-26,2,3);x.fillStyle="#ffd36a";x.fillRect(64,24,8,9);x.fillStyle=P.ac;x.fillRect(32,40,3,3)}
+ else if(c.dataset.th==="qs"){x.strokeStyle="#d6a840";x.lineWidth=2;x.beginPath();x.moveTo(8,20);x.lineTo(40,30);x.lineTo(90,50);x.stroke();x.strokeStyle="rgba(232,217,176,.5)";x.lineWidth=1.5;x.beginPath();x.moveTo(10,46);x.lineTo(50,50);x.lineTo(90,60);x.stroke();[[30,27,"#ffd36a"],[46,48,P.ac],[70,45,"#5a6366"]].forEach(function(p){x.fillStyle=p[2];x.beginPath();x.arc(p[0],p[1],4,0,7);x.fill()})}
+ else if(c.dataset.th==="bk"){x.fillStyle="#e8d9b0";x.fillRect(22,14,52,44);x.fillStyle="#b89a62";x.fillRect(18,12,60,4);x.fillRect(18,56,60,4);x.fillStyle="#6b5a36";for(var q=0;q<5;q++)x.fillRect(30,22+q*7,36-(q%2)*8,2);x.fillStyle=P.ac;x.fillRect(66,8,6,10)}
+ else{x.strokeStyle=P.ac;x.lineWidth=1.5;x.strokeRect(6,6,w-12,h-12);x.strokeRect(20,18,22,12);x.strokeRect(54,18,22,12);x.strokeRect(20,42,56,10);x.fillStyle="#e6c97a";for(var j=0;j<9;j++)x.fillRect(12+j*8,36,2,2);x.fillStyle="#e8f4f1";x.beginPath();x.arc(30,37,5,Math.PI,0);x.lineTo(35,43);x.lineTo(25,43);x.fill();x.fillStyle="#e0707a";x.beginPath();x.arc(66,37,5,0,Math.PI*2);x.fill()}})}
+window.__ARC={get qs(){return QS},QSG:QSG,gen:genMaze,ST:ST,FOUND:FOUND,PLG:GAMES.pl,setPL:function(s){PLX=s},kp:function(k,v){KP[k]=v},get pl(){return PLX},get mz(){return MX},PR:PR,MZ:MZ,plStep:plStep,hitsSolid:hitsSolid,setPub:function(p){pub=p;applyPub()},K:K,KP:KP};
+applyPub();
+})();
+</script></body></html>
