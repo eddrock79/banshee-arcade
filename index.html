@@ -386,34 +386,34 @@ MZG.draw=function(){var s=MX;if(!s)return;cx.fillStyle="#05080a";cx.fillRect(0,0
 };
 /* ================= game 3: Old Town Quest ================= */
 var QD=[
- {id:"rose",ls:"r",ll:[55.9520,-3.1985],nm:"The Black Rose",lab:"BLACK ROSE",pin:[112,24],ld:"r",ab:"br",item:"key",it:"cellar key",tx:11,ty:4,story:null,
+ {id:"rose",ls:"r",ll:[55.95161,-3.20456],nm:"The Black Rose",lab:"BLACK ROSE",pin:[112,24],ld:"r",ab:"br",item:"key",it:"cellar key",tx:11,ty:4,story:null,
   intro:"The way to the Old Town starts in the cellar. Find the cellar key on the high ledges, then ask the door.",
   r:{q:"The cellar door wants to know which street the Black Rose stands on. It is number 49.",o:["Rose Street","Niddry Street","The Grassmarket"],ok:0,h:"Think of a flower."},
   lay:{plats:[[8,3,6],[5,8,12]]},end:"The door opens onto the stair down. Follow it through the Old Town to the Banshee Labyrinth."},
- {id:"well",ls:"l",ll:[55.9486,-3.1993],nm:"Castlehill",lab:"WITCHES' WELL",pin:[72,84],ld:"r",ab:"bl",item:"lantern",it:"lantern",tx:14,ty:4,story:"well",
+ {id:"well",ls:"l",ll:[55.94888,-3.19642],nm:"Castlehill",lab:"WITCHES' WELL",pin:[72,84],ld:"r",ab:"bl",item:"lantern",it:"lantern",tx:14,ty:4,story:"well",
   intro:"It is dark on the Castle esplanade. Find the lantern, then ask the gate by the well.",
   r:{q:"I am small and bronze and easy to miss. I stand at the Castle's foot, and for hundreds who were burned as witches I am the only marker. What am I?",o:["The Witches' Well","The Maiden","The Mercat Cross"],ok:0,h:"Something with water, and a monument rather than a machine."},
   lay:{spikes:[[10,5,6]],plats:[[8,8,10],[5,12,15]],bats:[{cx:215,cy:120,ax:30,ay:14,sp:.04,ph:1}]}},
- {id:"grass",ls:"l",ll:[55.9476,-3.1960],nm:"The Grassmarket",lab:"GRASSMARKET",pin:[96,142],ld:"b",ab:"bl",item:"rope",it:"rope",tx:10,ty:4,story:"maggie",
+ {id:"grass",ls:"l",ll:[55.94748,-3.19625],nm:"The Grassmarket",lab:"GRASSMARKET",pin:[96,142],ld:"b",ab:"bl",item:"rope",it:"rope",tx:10,ty:4,story:"maggie",
   intro:"The Grassmarket was where the gallows stood. Fetch the rope, then ask the door.",
   r:{q:"I was hanged here in 1724 and woke up in my coffin on the road to burial. The law could not hang me twice. Who am I?",o:["Half-Hangit Maggie","Agnes Sampson","Mary King"],ok:0,h:"Her nickname tells you what went wrong with the hanging."},
   lay:{plats:[[8,4,7],[6,9,11],[8,13,15]],bats:[{cx:100,cy:70,ax:50,ay:14,sp:.035,ph:0},{cx:210,cy:100,ax:30,ay:16,sp:.04,ph:2}]}},
- {id:"bow",ls:"r",ll:[55.9487,-3.1953],nm:"The West Bow",lab:"WEST BOW",pin:[108,118],ld:"r",ab:"bl",item:"stick",it:"walking stick",tx:12,ty:2,story:"weir",
+ {id:"bow",ls:"r",ll:[55.94832,-3.19454],nm:"The West Bow",lab:"WEST BOW",pin:[108,118],ld:"r",ab:"bl",item:"stick",it:"walking stick",tx:12,ty:2,story:"weir",
   intro:"The West Bow climbs steeply from the Grassmarket. Climb the steps and fetch the walking stick.",
   r:{q:"I led the city in prayer, then confessed to terrible crimes in 1670. They say my walking stick still walks on its own. Who am I?",o:["Major Weir","Deacon Brodie","Sir George Mackenzie"],ok:0,h:"Not the man whose double life inspired Jekyll and Hyde."},
   lay:{plats:[[9,3,4],[7,6,7],[5,9,10],[3,12,13]],bats:[{cx:150,cy:90,ax:40,ay:16,sp:.04,ph:0}]}},
- {id:"grey",ls:"r",ll:[55.9470,-3.1926],nm:"Greyfriars Kirkyard",lab:"GREYFRIARS",pin:[156,184],ld:"r",ab:"bl",item:"bar",it:"iron bar",tx:15,ty:4,story:"resurrection",
+ {id:"grey",ls:"r",ll:[55.94683,-3.19289],nm:"Greyfriars Kirkyard",lab:"GREYFRIARS",pin:[156,184],ld:"r",ab:"bl",item:"bar",it:"iron bar",tx:15,ty:4,story:"resurrection",
   intro:"Greyfriars at night. The resurrection men are coming. Find the iron bar and mind the spikes.",
   r:{q:"Families bolted me over fresh graves so grave robbers could not dig. What iron cage am I?",o:["A mortsafe","The branks","The jougs"],ok:0,h:"Mort means death. The rest says what it does."},
   lay:{spikes:[[10,3,4],[10,8,9]],plats:[[8,5,6],[8,11,12],[5,14,16]],bats:[{cx:130,cy:80,ax:50,ay:14,sp:.04,ph:0},{cx:240,cy:60,ax:40,ay:12,sp:.045,ph:2}]}},
- {id:"banshee",ls:"l",ll:[55.94865,-3.18700],nm:"Niddry Street",lab:"THE BANSHEE",pin:[224,144],ld:"r",ab:"bl",item:"candle",it:"candle",tx:12,ty:3,story:"banshee",
+ {id:"banshee",ls:"l",ll:[55.94944,-3.18687],nm:"Niddry Street",lab:"THE BANSHEE",pin:[224,144],ld:"r",ab:"bl",item:"candle",it:"candle",tx:12,ty:3,story:"banshee",
   intro:"Niddry Street, and the Banshee Labyrinth below it. Light the way: find the candle.",
   r:{q:"In Irish folklore my scream warns that someone is about to die. What am I?",o:["A banshee","A kelpie","A brownie"],ok:0,h:"It is on the sign outside the door."},
   lay:{spikes:[[10,6,7]],plats:[[8,3,5],[6,7,9],[4,11,13],[7,15,16]],bats:[{cx:120,cy:100,ax:50,ay:18,sp:.04,ph:0},{cx:230,cy:80,ax:30,ay:14,sp:.05,ph:2}]}}
 ];
 var OS=[
- {id:"art",ls:"r",off:1,nm:"Auld Reekie Tours",ad:"45 Niddry Street, Edinburgh EH1 1LG",ll:[55.94895,-3.18690],tx:"Underground vaults and ghost tours, just along Niddry Street from the Banshee."},
- {id:"dun",ls:"l",nm:"The Edinburgh Dungeon",ad:"31 Market Street, Edinburgh EH1 1DF",ll:[55.95125,-3.18835],tx:"A live-actor walk through Edinburgh's darkest history."}];
+ {id:"art",ls:"r",off:1,nm:"Auld Reekie Tours",ad:"45 Niddry Street, Edinburgh EH1 1LG",ll:[55.94905,-3.18667],tx:"Underground vaults and ghost tours, just along Niddry Street from the Banshee."},
+ {id:"dun",ls:"l",nm:"The Edinburgh Dungeon",ad:"31 Market Street, Edinburgh EH1 1DF",ll:[55.95101,-3.19093],tx:"A live-actor walk through Edinburgh's darkest history."}];
 var QS=null,RM=null,RMK=[];
 function walkMin(a,b){var R=6371000,r=Math.PI/180,dl=(b[0]-a[0])*r,dg=(b[1]-a[1])*r,h=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dg/2)*Math.sin(dg/2),m=2*R*Math.asin(Math.sqrt(h))*1.3;return Math.max(1,Math.round(m/80))}
 function homeLL(){return pub==="br"?QD[0].ll:QD[5].ll}
