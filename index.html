@@ -166,33 +166,46 @@ function mkRoom(name,pb,o){var g=[],r,c;for(r=0;r<RR;r++){g.push([]);for(c=0;c<R
  (o.plats||[]).forEach(function(p){for(var c=p[1];c<=p[2];c++)g[p[0]][c]="#"});
  (o.walls||[]).forEach(function(w){for(var r=w[0];r<=w[1];r++)for(var c=w[2];c<=w[3];c++)g[r][c]="#"});
  if(o.door)for(r=o.door[1];r<=o.door[2];r++)g[r][o.door[0]]="D";
+ (o.gates||[]).forEach(function(w){for(var r=w[1];r<=w[2];r++)g[r][w[0]]="G"});
  (o.spikes||[]).forEach(function(s){for(var c=s[1];c<=s[2];c++)g[s[0]][c]="^"});
- return {name:name,pub:pb,g:g,stars:o.stars||[],bats:o.bats||[],torches:o.torches||[],scrolls:o.scrolls||[]}}
+ return {name:name,pub:pb,g:g,stars:o.stars||[],bats:o.bats||[],torches:o.torches||[],scrolls:o.scrolls||[],gates:o.gates||[]}}
 var PR=[
  mkRoom("The Black Rose Bar","br",{right:true,plats:[[8,4,8],[5,9,13],[8,13,17]],stars:[[6,7],[15,7],[11,3],[3,9]],torches:[[3,4],[16,4]],scrolls:[[5,10,"maggie"],[17,7,"maiden"]]}),
  mkRoom("The Black Rose Cellar","br",{left:true,right:true,walls:[[1,8,17,19]],door:[17,9,10],plats:[[6,3,6],[8,8,12],[5,10,14]],stars:[[3,5],[10,7],[12,4],[15,9]],bats:[{cx:80,cy:70,ax:50,ay:14,sp:.03,ph:0},{cx:210,cy:100,ax:40,ay:20,sp:.04,ph:2}],torches:[[2,3],[9,3]],scrolls:[[6,5,"weir"],[14,4,"brodie"]]}),
  mkRoom("The Banshee Bar","bl",{left:true,right:true,plats:[[8,6,9],[6,11,14],[8,15,18]],stars:[[6,7],[11,5],[16,7],[3,9]],torches:[[3,4],[16,4]],scrolls:[[9,7,"banshee"],[13,5,"nicol"]]}),
- mkRoom("South Bridge Vaults","bl",{left:true,right:true,plats:[[8,3,5],[6,7,10],[4,12,14],[7,16,18]],stars:[[4,7],[10,5],[12,3],[17,6]],bats:[{cx:150,cy:110,ax:70,ay:18,sp:.03,ph:0}],torches:[[2,3],[18,3]],scrolls:[[7,5,"vaults"],[14,3,"fire"]]}),
+ mkRoom("South Bridge Vaults","bl",{left:true,right:true,gates:[[18,9,10,"crowbar","crate"]],plats:[[8,3,5],[6,7,10],[4,12,14],[7,16,18]],stars:[[4,7],[10,5],[12,3],[17,6]],bats:[{cx:150,cy:110,ax:70,ay:18,sp:.03,ph:0}],torches:[[2,3],[18,3]],scrolls:[[7,5,"vaults"],[14,3,"fire"]]}),
  mkRoom("The Cowgate","bl",{left:true,right:true,spikes:[[10,4,6],[10,11,12]],plats:[[8,7,10],[5,13,17]],stars:[[8,7],[15,4],[5,8],[18,9]],bats:[{cx:230,cy:125,ax:30,ay:14,sp:.04,ph:1}],torches:[[3,3],[11,3]],scrolls:[[9,7,"cowgate"],[16,4,"plague"],[17,10,"resurrection"]]}),
- mkRoom("Nicol Edward's Cellar","bl",{left:true,right:true,spikes:[[10,8,9]],plats:[[8,2,5],[6,8,10],[8,12,14],[5,16,18]],stars:[[4,7],[13,7],[10,8],[18,9]],bats:[{cx:100,cy:60,ax:60,ay:14,sp:.035,ph:0},{cx:230,cy:105,ax:50,ay:18,sp:.04,ph:2}],torches:[[2,3],[13,3]],scrolls:[[3,7,"burke"],[9,5,"mackenzie"],[17,4,"covenanters"]]}),
+ mkRoom("Nicol Edward's Cellar","bl",{left:true,right:true,gates:[[18,9,10,"ironkey","iron gate"]],spikes:[[10,8,9]],plats:[[8,2,5],[6,8,10],[8,12,14],[5,16,18]],stars:[[4,7],[13,7],[10,8],[17,9]],bats:[{cx:100,cy:60,ax:60,ay:14,sp:.035,ph:0},{cx:230,cy:105,ax:50,ay:18,sp:.04,ph:2}],torches:[[2,3],[13,3]],scrolls:[[3,7,"burke"],[9,5,"mackenzie"],[17,4,"covenanters"]]}),
  mkRoom("The Banshee's Chamber","bl",{left:true,spikes:[[10,9,11]],plats:[[8,3,6],[6,8,11],[4,13,16]],stars:[[5,7],[9,5],[14,9],[12,3]],bats:[{cx:120,cy:80,ax:60,ay:20,sp:.05,ph:0},{cx:230,cy:60,ax:50,ay:14,sp:.055,ph:2}],torches:[[1,3],[16,8]],scrolls:[[4,7,"sawney"],[10,5,"well"],[17,10,"marykings"]]})
 ];
-var PLX=null,RMS=PR;
+var PLX=null,RMS=PR,GO={};
+var ING={tequila:{n:"Jose Cuervo Gold",s:"Tequila",c:"#d8a84a"},absinthe:{n:"Absinthe",s:"Absinthe",c:"#6fcf5a"},bsamb:{n:"Black Sambuca",s:"Black Sambuca",c:"#2b2433"},raft:{n:"Red Aftershock",s:"Aftershock",c:"#d83a3a"},irn:{n:"Irn Bru",s:"Irn Bru",c:"#e8782a"},
+ jager:{n:"J\u00e4germeister",s:"J\u00e4ger",c:"#4a3320"},fire:{n:"Fireball",s:"Fireball",c:"#c8561a"},sourz:{n:"Sourz Apple",s:"Sourz",c:"#9ad43a"},wsamb:{n:"White Sambuca",s:"White Sambuca",c:"#e8e8e0"},trose:{n:"Tequila Rose",s:"Tequila Rose",c:"#e88aa8"}};
+var RECIPE=["tequila","absinthe","bsamb","raft","irn"];
+var HOLDN={key:"KEY",pint:"PINT",crowbar:"CROWBAR",ironkey:"IRON KEY"};
 function setAct(p){if(p===curAct)return;curAct=p;P=PUBS[p];document.documentElement.dataset.pub=p}
 var PLG=GAMES.pl={abtn:"JUMP",keys:"Joystick or arrow keys to move. Up, Space or the JUMP button to jump.",
  init:function(){RMS=PR;var br=pub==="br",st=br?0:2;setAct(PR[st].pub);
   PLX={room:st,minRoom:st,barRoom:st,ed:br?"br":"bl",x:40,y:PH-TS-14,vx:0,vy:0,ground:false,face:1,lives:3,score:0,hold:null,doorOpen:!br,items:[],stars:[],scr:[],t:0,bt:0,dead:0,msg:"",mt:0,state:"ready",won:false,sx:40,sy:PH-TS-14,part:[],anim:0,coy:0,jb:0,time:0,panic:false,shake:0,seen:{}};
-  PLX.items=[{id:"pint",room:6,tx:15,ty:3,got:false}];if(br)PLX.items.unshift({id:"key",room:0,tx:11,ty:4,got:false});
+  GO={};PLX.ing=[];PLX.brewed=false;PLX.cz=false;
+  PLX.items=[{id:"pint",k:"pint",room:6,tx:15,ty:3,got:false,hid:true},
+   {id:"crowbar",k:"tool",room:2,tx:17,ty:7,got:false},{id:"ironkey",k:"tool",room:4,tx:10,ty:7,got:false},
+   {id:"tequila",k:"ing",room:2,tx:8,ty:7,got:false},{id:"irn",k:"ing",room:2,tx:12,ty:5,got:false},
+   {id:"bsamb",k:"ing",room:3,tx:13,ty:3,got:false},{id:"wsamb",k:"ing",room:3,tx:8,ty:5,got:false},
+   {id:"absinthe",k:"ing",room:4,tx:14,ty:4,got:false},{id:"sourz",k:"ing",room:4,tx:14,ty:9,got:false},
+   {id:"raft",k:"ing",room:5,tx:14,ty:7,got:false},{id:"fire",k:"ing",room:5,tx:5,ty:7,got:false},
+   {id:"trose",k:"ing",room:6,tx:10,ty:5,got:false}];
+  if(br){PLX.items.unshift({id:"key",k:"tool",room:0,tx:11,ty:4,got:false});PLX.items.push({id:"jager",k:"ing",room:1,tx:11,ty:4,got:false})}
   PR.forEach(function(r,i){PLX.stars[i]=r.stars.map(function(s){return {tx:s[0],ty:s[1],got:false}});PLX.scr[i]=r.scrolls.map(function(c){return {tx:c[0],ty:c[1],id:c[2],got:false}})});
   cv.width=PW;cv.height=PH;sizeCv();this.hudUpd();hint("");
-  overlay(br?"THE BLACK ROSE QUEST":"THE BANSHEE'S PINT",br?"The way down to the Banshee Labyrinth is locked. Find the key, go down, fetch the golden pint and bring it back to this bar.":"Fetch the golden pint from the Banshee's chamber, deep below, and carry it back to the bar.","PLAY",function(){PLX.state="play";beep(440,.1)})},
+  overlay(br?"THE BLACK ROSE QUEST":"THE BANSHEE'S PINT",br?"The way down to the Banshee Labyrinth is locked. Find the key and go down. Deep below, collect the right bottles, brew the Banshee cocktail at the cauldron, and bring the golden pint back to this bar.":"The golden pint is sealed in the Banshee's chamber, deep below. Find tools to open the way, collect the right bottles, brew the Banshee cocktail at the cauldron, then carry the pint back to the bar.","PLAY",function(){PLX.state="play";beep(440,.1)})},
  recolor:function(){},
- hudUpd:function(){var s=PLX;hud("<span class=\"l\">"+"♥".repeat(Math.max(0,s.lives))+"</span><span>SCORE <b>"+s.score+"</b></span><span>CARRY <b>"+(s.hold?(s.hold==="key"?"KEY":"PINT"):"-")+"</b></span><span>BOOK <b>"+foundCount()+"/"+ST.length+"</b></span>")},
+ hudUpd:function(){var s=PLX;hud("<span class=\"l\">"+"♥".repeat(Math.max(0,s.lives))+"</span><span>SCORE <b>"+s.score+"</b></span><span>CARRY <b>"+(s.hold?HOLDN[s.hold]:"-")+"</b></span><span>BOTTLES <b>"+s.ing.length+"</b></span><span>BOOK <b>"+foundCount()+"/"+ST.length+"</b></span>")},
  press:function(k){}
 };
 function sizeCv(){var w=Math.min(560,window.innerWidth-36),sc=Math.min(w/cv.width,Math.max(1,(window.innerHeight-290)/cv.height));sc=Math.max(.75,Math.floor(sc*4)/4);cv.style.width=Math.floor(cv.width*sc)+"px";cv.style.height=Math.floor(cv.height*sc)+"px"}
 window.addEventListener("resize",function(){if(G)sizeCv()});
-function solidAt(room,tx,ty,open){if(tx<0||tx>=RC)return false;if(ty<0)return true;if(ty>=RR)return true;var c=RMS[room].g[ty][tx];return c==="#"||(c==="D"&&!open)}
+function solidAt(room,tx,ty,open){if(tx<0||tx>=RC)return false;if(ty<0)return true;if(ty>=RR)return true;var c=RMS[room].g[ty][tx];return c==="#"||(c==="D"&&!open)||(c==="G"&&!GO[room+":"+tx])}
 function hitsSolid(s,x,y,w,h){var x0=Math.floor(x/TS),x1=Math.floor((x+w-.01)/TS),y0=Math.floor(y/TS),y1=Math.floor((y+h-.01)/TS);for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++)if(solidAt(s.room,tx,ty,s.doorOpen))return true;return false}
 function hitsSpike(s){var x0=Math.floor((s.x+2)/TS),x1=Math.floor((s.x+8)/TS),y0=Math.floor((s.y+8)/TS),y1=Math.floor((s.y+13)/TS);for(var ty=y0;ty<=y1;ty++)for(var tx=x0;tx<=x1;tx++){if(tx>=0&&tx<RC&&ty>=0&&ty<RR&&RMS[s.room].g[ty][tx]==="^"){var ox=tx*TS,oy=ty*TS+6;if(s.x+8>ox+2&&s.x+2<ox+TS-2&&s.y+14>oy)return true}}return false}
 function batPos(b,t){return {x:b.cx+Math.sin(t*b.sp+b.ph)*b.ax,y:b.cy+Math.sin(t*b.sp*1.7+b.ph)*b.ay}}
@@ -225,22 +238,44 @@ PLG.update=function(){var s=PLX;if(!s)return;s.anim++;
  if(die){s.lives--;s.dead=70;beep(130,.35,"sawtooth",.05);for(var i=0;i<14;i++)s.part.push({x:s.x+5,y:s.y+7,vx:rnd(-2,2),vy:rnd(-3,1),l:30,c:"#e8f4f1"});this.hudUpd();return}
  s.stars[s.room].forEach(function(st){if(!st.got&&Math.abs(st.tx*TS+8-(s.x+5))<9&&Math.abs(st.ty*TS+8-(s.y+7))<11){st.got=true;s.score+=50;beep(880,.07,"square",.03);PLG.hudUpd();spark(st.tx*TS+8,st.ty*TS+8,P.ac)}});
  for(var q=0;q<s.scr[s.room].length;q++){var c=s.scr[s.room][q];if(!c.got&&Math.abs(c.tx*TS+8-(s.x+5))<10&&Math.abs(c.ty*TS+8-(s.y+7))<12){c.got=true;s.score+=150;beep(500,.08);beep(760,.12);spark(c.tx*TS+8,c.ty*TS+8,"#e8d9b0");s.state="story";PLG.hudUpd();(function(id){readStory(id,function(){s.state="play";PLG.hudUpd()})})(c.id);return}}
- s.items.forEach(function(it){if(it.got||it.room!==s.room)return;var ix=it.tx*TS+2,iy=it.ty*TS+2;if(s.x+10>ix&&s.x<ix+12&&s.y+14>iy&&s.y<iy+14){
+ s.items.forEach(function(it){if(it.got||it.hid||it.room!==s.room)return;var ix=it.tx*TS+2,iy=it.ty*TS+2;if(s.x+10>ix&&s.x<ix+12&&s.y+14>iy&&s.y<iy+14){
+   if(it.k==="ing"){it.got=true;s.ing.push(it.id);s.score+=40;beep(740,.08,"triangle",.04);beep(980,.1,"triangle",.04);spark(ix+6,iy+6,ING[it.id].c);s.msg="You found "+ING[it.id].n+"!";s.mt=130;PLG.hudUpd();return}
    if(s.hold){var h=s.items.filter(function(i){return i.id===s.hold})[0];if(h){h.got=false;h.room=s.room;h.tx=Math.round((s.x-6*s.face)/TS);h.ty=Math.min(10,Math.round(s.y/TS));if(h.tx<1)h.tx=1;if(h.tx>18)h.tx=18}}
    it.got=true;s.hold=it.id;s.score+=100;beep(660,.1);beep(990,.15);spark(ix+6,iy+6,"#ffd36a");PLG.hudUpd();
    if(it.id==="pint"){s.panic=true;s.shake=50;beep(180,.6,"sawtooth",.06);beep(120,.8,"sawtooth",.05);s.msg="A scream rings through the Labyrinth. Run!";s.mt=190}
-   else{s.msg="You found the cellar key!";s.mt=150}}});
+   else{s.msg=it.id==="key"?"You found the cellar key!":it.id==="crowbar"?"You found a crowbar!":"You found an iron key!";s.mt=150}}});
  if(!s.doorOpen&&s.room===1){var near=s.x+10>=17*TS-3&&s.y>8*TS;if(near&&s.hold==="key"){s.doorOpen=true;s.hold=null;s.score+=200;beep(300,.2,"triangle",.06);beep(450,.25,"triangle",.06);s.msg="The cellar door creaks open.";s.mt=150;PLG.hudUpd()}else if(near&&s.mt<=0){s.msg="Locked. You need a key.";s.mt=90}}
+PR[s.room].gates.forEach(function(g){if(GO[s.room+":"+g[0]])return;var near=s.x+10>=g[0]*TS-3&&s.y+14>g[1]*TS-4;if(!near)return;if(s.hold===g[3]){GO[s.room+":"+g[0]]=1;s.hold=null;s.score+=200;beep(260,.18,"sawtooth",.05);beep(400,.2,"triangle",.06);spark(g[0]*TS+8,g[1]*TS+12,"#ffd36a");s.msg=g[4]==="crate"?"You smash the crate open!":"The iron gate swings open.";s.mt=150;PLG.hudUpd()}else if(s.mt<=0){s.msg="The "+g[4]+" blocks the way. You need a "+HOLDN[g[3]].toLowerCase()+".";s.mt=110}});
+ if(s.room===6){var cz=Math.abs(s.x+5-(4*TS+9))<22&&s.y>8*TS;if(cz&&!s.cz&&!s.brewed){s.cz=true;if(s.ing.length<5){s.msg="The cauldron needs five bottles. Explore the cellars above.";s.mt=150}else{showBrew();return}}if(!cz)s.cz=false}
  if(s.room===s.barRoom&&s.x<52&&s.y>8*TS){if(s.hold==="pint"){s.won=true;s.state="win";var tb=Math.max(0,1500-Math.floor(s.time/6));s.score+=1000+tb;setBest("pl",s.score);beep(660,.15);setTimeout(function(){beep(880,.15)},150);setTimeout(function(){beep(1320,.3)},300);PLG.hudUpd();overlay("CHEERS!","The ghost gets the golden pint.<br>Score "+s.score+" (time bonus "+tb+")<br>Stories found "+foundCount()+" of "+ST.length,"PLAY AGAIN",function(){PLG.init()})}else if(s.mt<=0&&s.time>150){s.msg=s.hold==="key"?"Ghost bartender: Open the cellar first!":"Ghost bartender: A golden pint, please!";s.mt=120}}
  if(s.mt>0)s.mt--;
  var br=s.ed==="br";
- hint(s.mt>0?s.msg:(s.hold==="pint"?"Carry the pint all the way back to the "+(br?"Black Rose":"bar")+"!":s.hold==="key"?"Take the key to the door in the Black Rose cellar.":(br&&!s.doorOpen)?"Find the key on the high ledge in the bar.":"Fetch the golden pint from the Banshee's chamber, far below."));
+ hint(s.mt>0?s.msg:(!s.brewed&&s.room>=2&&s.hold!=="pint"&&s.hold!=="key"&&!s.hold&&s.ing.length>=5?"You have bottles. Take them to the cauldron in the Banshee's chamber.":s.hold==="pint"?"Carry the pint all the way back to the "+(br?"Black Rose":"bar")+"!":s.hold==="key"?"Take the key to the door in the Black Rose cellar.":(br&&!s.doorOpen)?"Find the key on the high ledge in the bar.":"Open the sealed ways, collect the bottles, and brew the Banshee cocktail in the chamber far below."));
  s.part=s.part.filter(function(p){p.x+=p.vx;p.y+=p.vy;p.vy+=.1;return--p.l>0});
 };
+function showBrew(){var s=PLX;s.state="story";var pick={};
+ function draw(note){var n=Object.keys(pick).length;
+  var h="<div class=\"tag\">THE BANSHEE'S CAULDRON</div><h3>Brew the Banshee</h3><p>The cauldron bubbles and a voice whispers the recipe:</p><ul style=\"text-align:left;margin:4px 0 8px;padding-left:18px;line-height:1.3;font-size:.85rem\"><li>A green fairy that screams.</li><li>Black as the cellar floor.</li><li>Red as a warning light.</li><li>Agave, but not the pink one.</li><li>Orange fizz that Scots swear by.</li></ul>";
+  if(note)h+="<div class=\"sub\">"+note+"</div>";
+  h+="<div class=\"opts\" style=\"grid-template-columns:1fr 1fr\">"+(s.ing.length?s.ing.map(function(id){return "<button type=\"button\" class=\"opt"+(pick[id]?" on":"")+"\" data-i=\""+id+"\" style=\"border-left:6px solid "+ING[id].c+";padding:9px 8px;font-size:.82rem\">"+ING[id].n+(pick[id]?" \u2713":"")+"</button>"}).join(""):"<p>Your satchel has no bottles yet. Explore the cellars above.</p>")+"</div><div class=\"sub\">Chosen "+n+" of 5</div><button type=\"button\" class=\"go\" id=\"bbrew\">BREW</button><button type=\"button\" class=\"hnt\" id=\"bleave\">Leave the cauldron</button>";
+  sm.innerHTML="<div class=\"c\">"+h+"</div>";sm.style.display="flex";smFn=function(){leave()};
+  [].forEach.call(sm.querySelectorAll(".opt"),function(b){b.onclick=function(){var id=b.dataset.i;if(pick[id])delete pick[id];else if(Object.keys(pick).length<5)pick[id]=1;draw("")}});
+  $("#bleave").onclick=function(){leave()};
+  $("#bbrew").onclick=function(){var ch=Object.keys(pick);if(ch.length!==5){draw("Choose exactly five bottles.");return}
+   var ok=ch.filter(function(id){return RECIPE.indexOf(id)>=0}).length;
+   if(ok===5){sm.style.display="none";smFn=null;s.brewed=true;s.score+=500;s.items.forEach(function(it){if(it.id==="pint")it.hid=false});beep(523,.12,"triangle",.06);setTimeout(function(){beep(659,.12,"triangle",.06)},120);setTimeout(function(){beep(784,.25,"triangle",.06)},240);
+    showModal("<div class=\"tag\">BREWED</div><h3>The Banshee cocktail</h3><p>Tequila, absinthe, black sambuca, red Aftershock and Irn Bru. The cauldron roars and a golden light spills from the alcove above. The pint is yours to take.</p>","GO",function(){s.state="play";s.msg="The golden pint has appeared!";s.mt=170;PLG.hudUpd()})}
+   else{beep(140,.3,"sawtooth",.05);draw("Not right. "+ok+" of your five belong in the Banshee. Try another mix.")}}}
+ function leave(){sm.style.display="none";smFn=null;s.state="play"}
+ draw("")}
 function spark(x,y,c){for(var i=0;i<8;i++)PLX.part.push({x:x,y:y,vx:rnd(-1.5,1.5),vy:rnd(-2,.5),l:24,c:c})}
 function rect(c,x,y,w,h){cx.fillStyle=c;cx.fillRect(Math.round(x),Math.round(y),w,h)}
 function drawKey(x,y){rect("#ffd36a",x+1,y+1,5,5);rect("#0b0e10",x+3,y+3,1,1);rect("#ffd36a",x+5,y+3,7,2);rect("#ffd36a",x+9,y+5,2,3);rect("#ffd36a",x+12,y+5,1,2)}
 function drawPint(x,y){rect("#fff3d0",x+2,y,8,3);rect("#c9a23a",x+2,y+3,8,9);rect("#ffd36a",x+3,y+4,6,2);rect("rgba(255,255,255,.35)",x+3,y+3,1,8);rect("#8c6a1f",x+3,y+12,6,1)}
+function drawBottle(x,y,c){rect("#0b0e10",x+4,y,4,3);rect(c,x+3,y+3,6,9);rect("rgba(255,255,255,.35)",x+4,y+4,1,6);rect("#0b0e10",x+3,y+11,6,1)}
+function drawItem(id,x,y){if(id==="key")drawKey(x,y);else if(id==="pint")drawPint(x,y);else if(id==="crowbar"){rect("#8a979a",x+2,y+1,3,11);rect("#cfd8d6",x+2,y+1,1,11);rect("#8a979a",x+2,y,7,2);rect("#4a5558",x+8,y+1,2,3)}else if(id==="ironkey"){rect("#8a979a",x+1,y+1,5,5);rect("#0b0e10",x+3,y+3,1,1);rect("#8a979a",x+5,y+3,7,2);rect("#8a979a",x+9,y+5,2,3);rect("#cfd8d6",x+1,y+1,5,1)}else if(ING[id])drawBottle(x,y,ING[id].c)}
+function drawGate(x,y,kind){if(kind==="crate"){rect("#7a5a2a",x,y,TS,TS);rect("#4a3410",x,y,TS,2);rect("#4a3410",x,y+TS-2,TS,2);rect("#4a3410",x,y,2,TS);rect("#4a3410",x+TS-2,y,2,TS);for(var i=0;i<TS;i+=1){rect("#4a3410",x+i,y+i,1,1);rect("#4a3410",x+TS-1-i,y+i,1,1)}}else{rect("#2b3236",x,y,TS,TS);for(var b=2;b<TS;b+=4)rect("#8a979a",x+b,y,2,TS);rect("#cfd8d6",x,y+6,TS,2);rect("#ffd36a",x+11,y+7,2,3)}}
+function drawCauldron(x,y,t,on){rect("#241608",x-2,y+10,22,3);rect("#1a1e20",x,y+2,18,10);rect("#2b3236",x+1,y+2,16,3);rect(on?"#ffd36a":"#6fcf5a",x+3,y+1,12,2);if(!on){rect("#a0e890",x+5+Math.floor(Math.sin(t*.2)*3+3),y-2+Math.floor(Math.cos(t*.3)*1),2,2)}rect("#5a3a1a",x+2,y+12,3,3);rect("#5a3a1a",x+13,y+12,3,3)}
 function drawScroll(x,y){rect("#b89a62",x+1,y,10,2);rect("#e8d9b0",x+2,y+2,8,9);rect("#b89a62",x+1,y+11,10,2);rect("#6b5a36",x+3,y+4,6,1);rect("#6b5a36",x+3,y+6,5,1);rect("#6b5a36",x+3,y+8,6,1)}
 function drawGhost(x,y,face,anim,dead){if(dead&&Math.floor(anim/4)%2)return;
  cx.save();cx.translate(Math.round(x),Math.round(y));cx.shadowColor=P.ac;cx.shadowBlur=8;cx.fillStyle="#e8f4f1";
@@ -256,16 +291,18 @@ PLG.draw=function(){var s=PLX;if(!s)return;var rm=PR[s.room],t=s.anim;setAct(rm.
  for(var r=0;r<RR;r++)for(var c=0;c<RC;c++){var ch=rm.g[r][c],x=c*TS,y=r*TS;
   if(ch==="#"){rect(P.br,x,y,TS,TS);rect(P.br2,x,y+7,TS,1);rect(P.br2,x,y+15,TS,1);rect(P.br2,x+(r%2?4:11),y,1,8);rect(P.br2,x+(r%2?11:4),y+8,1,8);if(r<RR-1&&rm.g[r-1]&&rm.g[r-1][c]!=="#")rect(P.hi,x,y,TS,2)}
   else if(ch==="D"&&!s.doorOpen){rect("#5a3a1a",x,y,TS,TS);rect("#3d2810",x+7,y,2,TS);rect("#8a5a2a",x,y,TS,1);rect("#ffd36a",x+11,y+7,2,3)}
+  else if(ch==="G"&&!GO[s.room+":"+c]){var gk=rm.gates[0];drawGate(x,y,gk?gk[4]:"crate")}
   else if(ch==="^"){cx.fillStyle="#cfd8d6";for(var k=0;k<2;k++){cx.beginPath();cx.moveTo(x+k*8,y+16);cx.lineTo(x+k*8+4,y+7);cx.lineTo(x+k*8+8,y+16);cx.fill()}}}
  if(s.room===s.minRoom&&rm.g[9][0]==="."){for(var rr=9;rr<=10;rr++){rect(P.br,0,rr*TS,TS,TS);rect(P.br2,0,rr*TS+7,TS,1);rect(P.br2,4,rr*TS,1,8)}}
  if(s.room===s.barRoom){rect("#3d2810",0,PH-TS*3,40,TS*2);rect("#5a3a1a",0,PH-TS*3,40,3);rect("#241608",0,PH-TS-4,40,3);
   var by=PH-TS*3-20;cx.fillStyle=s.ed==="br"?"#5c4a3a":"#3a3f5c";cx.beginPath();cx.arc(20,by+10,10,Math.PI,0);cx.lineTo(30,by+22);cx.lineTo(10,by+22);cx.fill();rect("#0b0e10",16,by+8,2,3);rect("#0b0e10",22,by+8,2,3);rect("#cfd8d6",18,by+13,4,1)}
- s.items.forEach(function(it){if(it.got||it.room!==s.room)return;var bob=Math.sin(t*.1)*1.5,ix=it.tx*TS+2,iy=it.ty*TS+2+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,14);rg.addColorStop(0,"rgba(255,211,106,.4)");rg.addColorStop(1,"rgba(255,211,106,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);it.id==="key"?drawKey(ix,iy):drawPint(ix,iy)});
+ s.items.forEach(function(it){if(it.got||it.hid||it.room!==s.room)return;var bob=Math.sin(t*.1)*1.5,ix=it.tx*TS+2,iy=it.ty*TS+2+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,14);rg.addColorStop(0,"rgba(255,211,106,.4)");rg.addColorStop(1,"rgba(255,211,106,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);drawItem(it.id,ix,iy)});
+ if(s.room===6)drawCauldron(4*TS,PH-TS*2+2,t,s.brewed);
  s.scr[s.room].forEach(function(c){if(c.got)return;var bob=Math.sin(t*.09+c.tx)*1.5,ix=c.tx*TS+2,iy=c.ty*TS+1+bob;var rg=cx.createRadialGradient(ix+6,iy+6,1,ix+6,iy+6,13);rg.addColorStop(0,"rgba(232,217,176,.35)");rg.addColorStop(1,"rgba(232,217,176,0)");cx.fillStyle=rg;cx.fillRect(ix-8,iy-8,28,28);drawScroll(ix,iy)});
  s.stars[s.room].forEach(function(st){if(st.got)return;var bob=Math.sin(t*.12+st.tx)*1.5,x=st.tx*TS+8,y=st.ty*TS+8+bob;cx.fillStyle=P.ac;cx.shadowColor=P.ac;cx.shadowBlur=6;cx.beginPath();cx.moveTo(x,y-5);cx.lineTo(x+2,y-1);cx.lineTo(x+5,y);cx.lineTo(x+2,y+2);cx.lineTo(x+3,y+5);cx.lineTo(x,y+3);cx.lineTo(x-3,y+5);cx.lineTo(x-2,y+2);cx.lineTo(x-5,y);cx.lineTo(x-2,y-1);cx.closePath();cx.fill();cx.shadowBlur=0});
  rm.bats.forEach(function(b){var p=batPos(b,s.bt);drawBat(p.x,p.y,t)});
  if(s.dead<=0||s.state!=="play")drawGhost(s.x-2,s.y-1,s.face,t,false);else if(s.dead>0)drawGhost(s.x-2,s.y-1,s.face,t,true);
- if(s.hold&&s.dead<=0){var hx=s.x-1,hy=s.y-14;s.hold==="key"?drawKey(hx,hy):drawPint(hx,hy-1)}
+ if(s.hold&&s.dead<=0){var hx=s.x-1,hy=s.y-14;drawItem(s.hold,hx,hy-(s.hold==="pint"?1:0))}
  s.part.forEach(function(p){rect(p.c,p.x,p.y,2,2)});
  if(s.panic){cx.fillStyle="rgba(150,20,30,"+(.05+.04*Math.sin(t*.2))+")";cx.fillRect(0,0,PW,PH)}
  cx.restore();
@@ -491,6 +528,17 @@ function qEnter(i){var s=QS,d=QD[i],rm=qRoom(d);
 function qPick(i){var s=QS;if(i>qNext()){beep(150,.15,"square",.04);hint("Finish the earlier places first.");return}
  var d=QD[i];s.sel=i;if(s.done.indexOf(d.id)>=0){if(d.story)readStory(d.story,qHud);else showModal("<div class=\"tag\">QUEST</div><h3>"+d.nm+"</h3><p>"+d.end+"</p>","CLOSE");return}qEnter(i)}
 function shuf(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+var ORD={
+ grey:{q:"The lock is a carved timeline. Tap these Greyfriars Bobby moments from earliest to latest.",e:[["John Gray, Bobby's master, is buried in Greyfriars Kirkyard","1858"],["Bobby dies, after guarding the grave for years","1872"],["The Bobby statue is unveiled by the fountain","1873"]]},
+ covenanters:{q:"The lock is a carved timeline. Tap these Covenanter and Edinburgh events from earliest to latest.",e:[["The National Covenant is signed at Greyfriars Kirk","1638"],["The plague sweeps through Edinburgh","1645"],["The Act of Union joins Scotland and England","1707"],["Burke is hanged after the West Port murders","1829"]]},
+ mackenzie:{q:"The lock is a carved timeline. Tap these Mackenzie moments from earliest to latest.",e:[["Covenanters are captured after Bothwell Bridge","1679"],["Sir George Mackenzie dies","1691"],["Visitors report the Mackenzie Poltergeist","1998"]]},
+ burke:{q:"The lock is a carved timeline. Tap these dark Edinburgh moments from earliest to latest.",e:[["The West Port murders take place","1828"],["William Burke is hanged","1829"],["The Anatomy Act changes how bodies reach surgeons","1832"]]}};
+function showOrder(d,onOk,onCancel){var z=ORD[d.id],pick=[],ord=shuf(z.e.map(function(x,i){return i}));
+ function draw(note){var h="<div class=\"tag\">THE DOOR ASKS</div><h3>Set the timeline</h3><p>"+z.q+"</p>"+(note?"<div class=\"sub\">"+note+"</div>":"")+"<div class=\"opts\">"+ord.map(function(i){var n=pick.indexOf(i);return "<button type=\"button\" class=\"opt"+(n>=0?" on":"")+"\" data-i=\""+i+"\">"+(n>=0?(n+1)+". ":"")+z.e[i][0]+(n>=0?" ("+z.e[i][1]+")":"")+"</button>"}).join("")+"</div><button type=\"button\" class=\"hnt\" id=\"oreset\">Start again</button>";
+  sm.innerHTML="<div class=\"c\">"+h+"</div>";sm.style.display="flex";smFn=onCancel;
+  [].forEach.call(sm.querySelectorAll(".opt"),function(b){b.onclick=function(){var i=+b.dataset.i;if(pick.indexOf(i)>=0)return;if(i!==pick.length){beep(140,.25,"sawtooth",.05);pick=[];draw("Not that one. The timeline resets.");return}pick.push(i);beep(520+60*i,.08,"triangle",.04);if(pick.length===z.e.length){sm.style.display="none";smFn=null;onOk()}else draw("")}});
+  $("#oreset").onclick=function(){pick=[];draw("")}}
+ draw("")}
 function showRiddle(d,wrong,onOk,onCancel){var o=shuf(d.r.o.map(function(t,i){return {t:t,ok:i===d.r.ok}}));
  var h="<div class=\"tag\">THE DOOR ASKS</div><h3>Answer the riddle</h3><p>"+d.r.q+"</p>"+(wrong?"<div class=\"sub\">Not quite. The door stays shut. Try again.</div>":"")+"<div class=\"opts\">"+o.map(function(x,i){return "<button type=\"button\" class=\"opt\" data-i=\""+i+"\">"+x.t+"</button>"}).join("")+"</div><button type=\"button\" class=\"hnt\">Need a hint?</button><div class=\"sub\" id=\"hh\"></div>";
  sm.innerHTML="<div class=\"c\">"+h+"</div>";sm.style.display="flex";smFn=onCancel;
@@ -519,7 +567,7 @@ QSG.update=function(){var s=QS;if(!s)return;if(s.mode==="map"){s.anim=(s.anim||0
  if(die){r.dead=50;beep(130,.35,"sawtooth",.05);for(var i=0;i<14;i++)r.part.push({x:r.x+5,y:r.y+7,vx:rnd(-2,2),vy:rnd(-3,1),l:30,c:"#e8f4f1"});return}
  if(!r.itemGot){var ix=d.tx*TS+2,iy=d.ty*TS+2;if(r.x+10>ix&&r.x<ix+12&&r.y+14>iy&&r.y<iy+14){r.itemGot=true;r.hold=d.item;s.score+=100;beep(660,.1);beep(990,.15);r.msg="You found the "+d.it+"!";r.mt=140;qHud()}}
  var near=!r.doorOpen&&r.x+10>=17*TS-3&&r.y>8*TS;
- if(near){if(r.hold===d.item){if(!r.asking){r.asking=true;r.modal=true;showRiddle(d,false,function(){r.doorOpen=true;r.hold=null;s.score+=200;beep(300,.2,"triangle",.06);beep(450,.25,"triangle",.06);r.msg="The door swings open.";r.mt=140;r.modal=false;qHud()},function(){r.modal=false})}}else if(r.mt<=0){r.msg="The door needs the "+d.it+".";r.mt=100}}
+ if(near){if(r.hold===d.item){if(!r.asking){r.asking=true;r.modal=true;showRiddle(d,false,function(){var fin=function(){r.doorOpen=true;r.hold=null;s.score+=200;beep(300,.2,"triangle",.06);beep(450,.25,"triangle",.06);r.msg="The door swings open.";r.mt=140;r.modal=false;qHud()};if(ORD[d.id]){r.modal=true;showOrder(d,fin,function(){r.modal=false})}else fin()},function(){r.modal=false})}}else if(r.mt<=0){r.msg="The door needs the "+d.it+".";r.mt=100}}
  else if(r.x<15*TS)r.asking=false;
  if(r.doorOpen&&r.x+10>18*TS+2&&r.y>8*TS){qDone();return}
  if(r.mt>0)r.mt--;
