@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0c0915" />
+  <meta name="description" content="An Edinburgh dark-history adventure starring one wobbly ghost, Fire Ghost and a great many bad decisions." />
+  <title>The Ghost of Edinburgh — Auld Reekie's Dark Secrets</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<div class="site">
+  <header class="topbar">
+    <div class="brand"><span class="sigil">✦</span><div><small>HAUNTED PUBS PRESENTS</small><strong>THE GHOST OF EDINBURGH</strong></div></div>
+    <div class="top-actions"><button id="btn-leaderboard" type="button">🏆 <span>Scores</span></button><button id="btn-journal" type="button">📖 <span>History</span></button><button id="btn-hint" type="button">💡 <span>Hint</span></button><button id="btn-sound" type="button" aria-label="Toggle sound">♫</button></div>
+  </header>
+
+  <main>
+    <div class="game-shell">
+      <div class="game-header"><div><span class="eyebrow">AULD REEKIE'S DARK SECRETS</span><h1 id="room-title">The Black Rose Cellar</h1></div><div class="game-stat"><span>WOBBLE</span><div class="wobble-meter"><i id="wobble-fill"></i></div><b id="wobble-label">68%</b></div></div>
+      <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="game" width="960" height="540" role="img" aria-label="Retro pixel style Edinburgh adventure. Move with arrows, jump with Space, interact with E, use an inventory item with U."></canvas>
+        <div id="toast" class="toast" aria-live="polite"></div>
+        <div id="prompt" class="world-prompt" aria-live="polite"></div>
+        <div id="modal" class="modal" hidden>
+          <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+            <div class="modal-eyebrow" id="modal-eyebrow"></div><h2 id="modal-title"></h2><div class="modal-body" id="modal-body"></div><div class="modal-actions" id="modal-actions"></div>
+          </div>
+        </div>
+      </div>
+      <div class="below-canvas">
+        <div class="inventory"><div class="inventory-head">POCKETS <span id="selected-label">Select an item, then USE near the object.</span></div><div id="inventory-slots" class="inventory-slots"></div></div>
+        <div class="status"><span id="mission-text">Find your feet. Then find out what happened.</span><div class="status-sub"><span id="secret-count">SECRETS 0 / 7</span><span id="clock">00:00</span><span id="score">0000 PTS</span></div></div>
+      </div>
+      <div class="touch-controls" aria-label="Touch game controls"><div class="touch-move"><button data-control="left" aria-label="Move left">◀</button><button data-control="right" aria-label="Move right">▶</button></div><div class="touch-action"><button data-control="jump">JUMP</button><button data-control="interact">LOOK / TALK</button><button data-control="use">USE</button></div></div>
+    </div>
+    <p class="under-game">← → move · SPACE jump · E investigate / talk · U use selected item · 1–3 select pocket · H hint. Touch controls work on phones and tablets.</p>
+    <footer><span>Inspired by classic British puzzle adventures, Edinburgh's documented history and Old Town folklore.</span><span><a href="https://www.auldreekietours.com/" target="_blank" rel="noopener noreferrer">Auld Reekie Tours ↗</a> · <a href="https://www.nms.ac.uk/" target="_blank" rel="noopener noreferrer">National Museums Scotland ↗</a></span></footer>
+  </main>
+</div>
+<script src="game.js" defer></script>
+</body>
+</html>
