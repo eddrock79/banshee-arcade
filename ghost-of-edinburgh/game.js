@@ -41,14 +41,14 @@ const BASE_OBJECTS={
 const initial=()=>({room:'cellar',x:92,y:GROUND,vy:0,elapsed:0,wobble:68,water:0,falls:0,inventory:[],selected:-1,found:[],flags:{gate:false,drained:false,fire:false,projector:false,complete:false},runes:[0,2,1],hints:0,steps:0,scoreSaved:false});
 let state=initial(),keys={left:false,right:false},jumpRequested=false,toastUntil=0,toastText='',modalOpen=false,running=false,lastFrame=performance.now(),lastSave=0,blink=0,fireBob=0,randomFallCooldown=0;
 let soundOn=false,audioCtx=null;
-let ghost={x:state.x,y:state.y,vy:0,onGround:true,face:1,tumble:0};
+let ghost={x:state.x,y:state.y,vy:0,onGround:true,face:1,tumble:0,lean:0};
 const storGet=(k)=>{try{return JSON.parse(localStorage.getItem(k));}catch{return null;}};
 const storSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 function note(text,duration=3000){toastText=text;toastUntil=performance.now()+duration;$('toast').textContent=text;$('toast').classList.add('show');}
 function beep(freq=440,dur=.08){if(!soundOn)return;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=freq;g.gain.value=.035;o.connect(g).connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur);}catch{}}
 function save(){if(!state.flags.complete)storSet(SAVE,{...state,x:ghost.x,y:ghost.y,vy:0});}
-function load(){const s=storGet(SAVE);if(!s||!ROOM[s.room]||!Array.isArray(s.inventory)||!s.flags)return false;state={...initial(),...s,flags:{...initial().flags,...s.flags}};ghost={x:clamp(s.x||92,25,925),y:GROUND,vy:0,onGround:true,face:1,tumble:0};return true;}
-function reset(){state=initial();ghost={x:92,y:GROUND,vy:0,onGround:true,face:1,tumble:0};storSet(SAVE,null);refresh();}
+function load(){const s=storGet(SAVE);if(!s||!ROOM[s.room]||!Array.isArray(s.inventory)||!s.flags)return false;state={...initial(),...s,flags:{...initial().flags,...s.flags}};ghost={x:clamp(s.x||92,25,925),y:GROUND,vy:0,onGround:true,face:1,tumble:0,lean:0};return true;}
+function reset(){state=initial();ghost={x:92,y:GROUND,vy:0,onGround:true,face:1,tumble:0,lean:0};storSet(SAVE,null);refresh();}
 const owns=id=>state.inventory.includes(id);
 function give(id){if(owns(id))return; if(state.inventory.length>=3){note('Your pockets are full. Use something first!');return false;}state.inventory.push(id);state.selected=state.inventory.length-1;beep(560);note(`Picked up: ${ITEMS[id].label}`);refresh();save();return true;}
 function take(id){const i=state.inventory.indexOf(id);if(i!==-1)state.inventory.splice(i,1);state.selected=state.inventory.length?Math.min(state.selected,state.inventory.length-1):-1;refresh();save();}
@@ -141,7 +141,7 @@ function leaderboard(which='today'){const scores=storGet(SCORES)||[],today=dateE
  showModal('THE HAUNTED HALL OF FAME',which==='today'?'Today’s Best Ghosts':'All-Time Legends',content,[['Back to game',()=>{if(state.flags.complete)goIntro();else closeModal();}],['New adventure',()=>{reset();running=true;closeModal();},true]]);$('tab-today').onclick=()=>leaderboard('today');$('tab-all').onclick=()=>leaderboard('all');}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function update(dt){state.elapsed+=dt;state.wobble=clamp(state.wobble+dt*.12,0,95);state.steps+=dt;if(randomFallCooldown>0)randomFallCooldown-=dt;ghost.tumble=Math.max(0,ghost.tumble-dt);
- let dir=(keys.right?1:0)-(keys.left?1:0);const speed=state.wobble>70?174:200;if(dir)ghost.face=dir;
+ let dir=(keys.right?1:0)-(keys.left?1:0);const speed=state.wobble>70?174:200;if(dir)ghost.face=dir;ghost.lean+=((dir?(ghost.onGround?.2:.12):0)+(dir?(state.wobble/100)*.14:0)-ghost.lean)*Math.min(1,dt*9);
  const wobble=state.wobble>55?Math.sin(state.elapsed*8)*((state.wobble-55)*.03):0;
  ghost.x+=(dir*speed+wobble)*dt;
  if(jumpRequested&&ghost.onGround){ghost.vy=-530;ghost.onGround=false;beep(410,.06);}jumpRequested=false;
@@ -209,15 +209,15 @@ function drawObjects(){for(const o of activeObjects()){const wave=Math.sin(fireB
  }}
 function drawFire(x,y,scale=1,behind=false){ctx.save();ctx.translate(x,y+Math.sin(fireBob*6)*5);ctx.scale(scale,scale);glow(0,0,44,'#ff6b2d70');ctx.fillStyle='#fc7b31';ctx.beginPath();ctx.moveTo(-18,21);ctx.bezierCurveTo(-37,3,-4,-7,-12,-32);ctx.bezierCurveTo(2,-24,3,-37,9,-45);ctx.bezierCurveTo(14,-20,31,-7,20,22);ctx.closePath();ctx.fill();ctx.fillStyle='#f4cc5e';ctx.beginPath();ctx.moveTo(-9,18);ctx.bezierCurveTo(-16,6,2,-9,3,-19);ctx.bezierCurveTo(9,-7,19,4,12,19);ctx.closePath();ctx.fill();ellipse(-5,3,3.5,5,'#231e2d');ellipse(9,3,3.5,5,'#231e2d');ctx.restore();if(behind)text('HELP!',x,y-72,12,'#ffc7a1');}
 function drawNpc(x,ground){ctx.save();ctx.translate(x,ground);ellipse(0,-30,21,35,'#1a171e');ellipse(0,-66,21,19,'#d0a98e');rect(-25,-85,50,13,'#19151f');rect(-11,-101,22,18,'#17131b');ellipse(-7,-68,2,4,'#2a1e26');ellipse(9,-68,2,4,'#2a1e26');ctx.restore();}
-function drawGhost(){ctx.save();let wob=(state.wobble/100)*Math.sin(state.elapsed*8)*9,fall=ghost.tumble>0;ctx.translate(ghost.x,ghost.y-35+Math.sin(fireBob*6)*2);if(fall)ctx.rotate(.9*Math.sin(ghost.tumble*4));else ctx.rotate(wob*Math.PI/180);ctx.scale(ghost.face,1);
+function drawGhost(){ctx.save();let wob=(state.wobble/100)*Math.sin(state.elapsed*8)*9,fall=ghost.tumble>0;ctx.translate(ghost.x,ghost.y-35+Math.sin(fireBob*6)*2);if(fall)ctx.rotate(ghost.face*1.35*Math.sin(Math.PI*(1-ghost.tumble/.63)));else ctx.rotate(ghost.face*ghost.lean+wob*Math.PI/180);ctx.scale(ghost.face,1);
  glow(0,0,62,'#b5d9ee1c');ellipse(0,31,24,5,'#070b1880');
  ctx.fillStyle='#f0ecf4';ctx.strokeStyle='#c4c3df';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-26,20);ctx.bezierCurveTo(-33,-3,-32,-35,-13,-42);ctx.bezierCurveTo(7,-52,32,-35,31,-9);ctx.lineTo(30,21);ctx.quadraticCurveTo(23,32,15,23);ctx.quadraticCurveTo(6,35,-2,24);ctx.quadraticCurveTo(-16,34,-23,22);ctx.closePath();ctx.fill();ctx.stroke();
- ellipse(-10,-14,5,8,'#232339');ellipse(11,-14,5,8,'#232339');ellipse(-8,-12,1.5,3,'#f6f1f0');ellipse(12,-12,1.5,3,'#f6f1f0');ctx.strokeStyle='#57465a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(2,-1,7,0.1,Math.PI-.2);ctx.stroke();
+ ellipse(0,-14,5,8,'#232339');ellipse(19,-14,5,8,'#232339');ellipse(2,-12,1.5,3,'#f6f1f0');ellipse(21,-12,1.5,3,'#f6f1f0');ctx.strokeStyle='#57465a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(12,-2,6,0.1,Math.PI-.2);ctx.stroke();
  // scarf and glove — our ghost’s signature look
  rect(-29,0,15,10,'#bd5c61');rect(17,2,15,10,'#bd5c61');rect(-15,22,7,9,'#a94355');rect(12,23,7,9,'#a94355');ctx.restore();
  if(state.flags.fire)drawFire(ghost.x-ghost.face*61,ghost.y-33,.75);
 }
-function render(){ctx.clearRect(0,0,W,H);bg();drawObjects();drawGhost();if(state.wobble>72){rect(0,0,W,6,'#a54b5166');rect(0,H-6,W,6,'#a54b5166');}}
+function render(){canvas.style.setProperty('--camx',(clamp(ghost.x/W,0,1)*100).toFixed(1)+'%');ctx.clearRect(0,0,W,H);bg();drawObjects();drawGhost();if(state.wobble>72){rect(0,0,W,6,'#a54b5166');rect(0,H-6,W,6,'#a54b5166');}}
 function frame(t){const dt=Math.min(.04,(t-lastFrame)/1000);lastFrame=t;if(running&&!modalOpen)update(dt);render();if(toastText && t>toastUntil){toastText='';$('toast').classList.remove('show')}requestAnimationFrame(frame)}
 function keyDown(e){if(['ArrowLeft','ArrowRight','ArrowUp',' ','Spacebar'].includes(e.key))e.preventDefault();if(modalOpen){if(e.key==='Escape'&&running)closeModal();return;}
  if(e.repeat&&['e','E','u','U','h','H'].includes(e.key))return;
