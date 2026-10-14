@@ -224,6 +224,7 @@ function keyDown(e){if(['ArrowLeft','ArrowRight','ArrowUp',' ','Spacebar'].inclu
  const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=true;if(k==='arrowright'||k==='d')keys.right=true;if(k==='arrowup'||k===' '||k==='w')jumpRequested=true;if(k==='e'||k==='enter')interact();if(k==='u'||k==='q')use();if(k==='h')hint();if(['1','2','3'].includes(k)){const n=Number(k)-1;if(state.inventory[n]){state.selected=n;refresh();}}}
 function keyUp(e){const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=false;if(k==='arrowright'||k==='d')keys.right=false;}
 window.addEventListener('keydown',keyDown);window.addEventListener('keyup',keyUp);window.addEventListener('blur',()=>{keys.left=keys.right=false;});
+for(const ev of ['contextmenu','selectstart','dragstart'])document.querySelector('.touch-controls').addEventListener(ev,e=>e.preventDefault());
 for(const b of document.querySelectorAll('[data-control]')){const act=b.dataset.control;
  const down=e=>{e.preventDefault();b.classList.add('active');if(act==='left'||act==='right')keys[act]=true;else if(act==='jump')jumpRequested=true;else if(act==='interact')interact();else if(act==='use')use();};
  const up=e=>{e.preventDefault();b.classList.remove('active');if(act==='left'||act==='right')keys[act]=false;};
