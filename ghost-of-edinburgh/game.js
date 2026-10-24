@@ -324,6 +324,7 @@ function keyDown(e){if(['ArrowLeft','ArrowRight','ArrowUp',' ','Spacebar'].inclu
 function keyUp(e){const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=false;if(k==='arrowright'||k==='d')keys.right=false;}
 window.addEventListener('keydown',keyDown);window.addEventListener('keyup',keyUp);window.addEventListener('blur',()=>{keys.left=keys.right=false;});
 for(const b of document.querySelectorAll('[data-control]')){const act=b.dataset.control;
+ b.addEventListener('selectstart',e=>e.preventDefault());b.addEventListener('contextmenu',e=>e.preventDefault());
  const down=e=>{e.preventDefault();b.classList.add('active');if(act==='left'||act==='right')keys[act]=true;else if(act==='jump')jumpRequested=true;else if(act==='interact')interact();else if(act==='use')use();};
  const up=e=>{e.preventDefault();b.classList.remove('active');if(act==='left'||act==='right')keys[act]=false;};
  b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);b.addEventListener('pointerleave',up);
