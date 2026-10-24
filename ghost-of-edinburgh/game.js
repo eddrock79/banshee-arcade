@@ -226,6 +226,7 @@ function drawGhost(){
  const dazed=falling||state.wobble>83;
  const sleepy=ghost.idle>5&&!pleased;
  const hic=ghost.hiccup>0;
+ const profile=moving&&!falling; // side view only while walking; front view when standing still
  const spin=falling? Math.sin((1.04-ghost.tumble)/1.04*Math.PI)*1.20:0;
  // Soft grounding shadow is anchored to the platform, not the bouncing body.
  ellipse(ghost.x,ghost.y+1,31+(jumping?-7:0),6,'#08071399');
@@ -255,26 +256,46 @@ function drawGhost(){
    ellipse(ax+side*5,ay+armY,9,10,'#a52f49');
    ellipse(ax+side*2,ay+armY-3,5,5,'#e7717e');
  }
- // True side-on silhouette with a projecting nose and trailing ghostly hem.
- // Local right is forward; the whole sprite mirrors when he turns left.
+ if(!profile){
+ // Pudgy, softly shaded body with three little ghostly tail scallops.
  ctx.save();
- const body=ctx.createLinearGradient(-29,-38,37,29);
- body.addColorStop(0,'#ffffff');body.addColorStop(.55,'#f8f5f1');body.addColorStop(1,'#b9cddd');
+ const body=ctx.createLinearGradient(-33,-38,34,33);
+ body.addColorStop(0,'#ffffff');body.addColorStop(.53,'#f8f5f1');body.addColorStop(1,'#bfd1e0');
  ctx.fillStyle=body;ctx.strokeStyle='#716c90';ctx.lineWidth=3.3;ctx.lineJoin='round';
- ctx.beginPath();ctx.moveTo(-30,13);ctx.quadraticCurveTo(-39,4,-31,-5);
- ctx.quadraticCurveTo(-38,-24,-29,-35);ctx.bezierCurveTo(-22,-51,-3,-56,11,-48);
- ctx.quadraticCurveTo(24,-43,27,-31);ctx.lineTo(30,-22);
- ctx.quadraticCurveTo(40,-18,39,-12);ctx.quadraticCurveTo(37,-7,29,-7);
- ctx.quadraticCurveTo(29,7,24,16);ctx.quadraticCurveTo(21,25,11,25);
- ctx.quadraticCurveTo(4,33,-5,25);ctx.quadraticCurveTo(-15,32,-22,24);
- ctx.quadraticCurveTo(-31,25,-30,13);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
- // Side highlight and scarf wrap around the narrow profile.
- ellipse(-20,-22,6,16,'#ffffff99');ellipse(25,-5,5,3.5,'#ef9ca8a8');
- ctx.strokeStyle='#503b6d';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-18,10);ctx.quadraticCurveTo(4,17,27,5);ctx.stroke();
- ctx.strokeStyle='#8d659c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-17,8);ctx.quadraticCurveTo(4,14,25,6);ctx.stroke();
- ctx.save();ctx.translate(21,10);ctx.rotate(.2+(moving?gait*.3:0)+Math.sin(t*3)*.12);
- rect(0,0,9,20,'#76517e');rect(2,0,3,17,'#b485b9');ctx.restore();
- ellipse(4,12,5,5,'#e4be79');text('B',4,15,7,'#36243f','Georgia');
+ ctx.beginPath();ctx.moveTo(-31,15);ctx.bezierCurveTo(-40,-13,-31,-50,-3,-53);
+ ctx.bezierCurveTo(29,-56,39,-28,33,7);
+ ctx.quadraticCurveTo(33,28,21,26);ctx.quadraticCurveTo(13,36,3,27);
+ ctx.quadraticCurveTo(-5,34,-13,27);ctx.quadraticCurveTo(-24,34,-31,15);
+ ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+ // Belly, highlights, rosy cheeks and a crooked purple neckerchief.
+ ellipse(7,11,17,14,'#d8e1e9aa');
+ ellipse(-19,-21,7,17,'#ffffff99');
+ ellipse(-20,-3,7,4,'#ef9ca8a8');ellipse(22,-3,7,4,'#ef9ca8a8');
+ ctx.strokeStyle='#503b6d';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-23,11);ctx.quadraticCurveTo(0,20,24,8);ctx.stroke();
+ ctx.strokeStyle='#8d659c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-22,9);ctx.quadraticCurveTo(0,17,19,9);ctx.stroke();
+ ctx.save();ctx.translate(20,13);ctx.rotate(.2+(moving?gait*.3:0)+Math.sin(t*3)*.12);
+ rect(0,0,10,23,'#76517e');rect(2,0,3,19,'#b485b9');ctx.restore();
+ ellipse(0,14,5,5,'#e4be79');text('B',0,17,7,'#36243f','Georgia');
+ }else{
+ // Side view: same chubby body, narrower, with a little nose nub at the front.
+ ctx.save();
+ ctx.fillStyle='#f9f5f0';ctx.strokeStyle='#716c90';ctx.lineWidth=3.3;ctx.lineJoin='round';
+ ctx.beginPath();ctx.ellipse(33,-13,7.5,6.5,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+ const body=ctx.createLinearGradient(-30,-38,30,33);
+ body.addColorStop(0,'#ffffff');body.addColorStop(.55,'#f8f5f1');body.addColorStop(1,'#bfd1e0');
+ ctx.fillStyle=body;
+ ctx.beginPath();ctx.moveTo(-30,15);ctx.bezierCurveTo(-38,-13,-30,-50,-3,-53);
+ ctx.bezierCurveTo(24,-56,34,-28,29,7);
+ ctx.quadraticCurveTo(29,28,19,26);ctx.quadraticCurveTo(12,36,3,27);
+ ctx.quadraticCurveTo(-5,34,-13,27);ctx.quadraticCurveTo(-24,34,-30,15);
+ ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+ ellipse(37,-14,3.2,2.4,'#ef9ca8');ellipse(23,-5,6,3.5,'#ef9ca8a8');ellipse(-18,-21,6,17,'#ffffff99');
+ ctx.strokeStyle='#503b6d';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-21,11);ctx.quadraticCurveTo(0,19,24,8);ctx.stroke();
+ ctx.strokeStyle='#8d659c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-20,9);ctx.quadraticCurveTo(0,16,22,9);ctx.stroke();
+ ctx.save();ctx.translate(15,13);ctx.rotate(.2+(moving?gait*.3:0)+Math.sin(t*3)*.12);
+ rect(0,0,9,21,'#76517e');rect(2,0,3,17,'#b485b9');ctx.restore();
+ ellipse(2,14,5,5,'#e4be79');text('B',2,17,7,'#36243f','Georgia');
+ }
  // A slightly crooked old Edinburgh cap, with a miniature Black Rose badge.
  ctx.save();ctx.translate(0,-47);ctx.rotate(-.17+Math.sin(t*1.7)*.03+(falling?.22:0));
  ctx.fillStyle='#302339';ctx.strokeStyle='#15111f';ctx.lineWidth=2;
@@ -285,16 +306,29 @@ function drawGhost(){
  ctx.restore();
  // Face: two independently animated eyes, lids, brows and comic mouths.
  const eyeHeight=blink?.9:(sleepy?3:dazed?6:9);
- // One visible eye, brow and forward-projecting nose define the profile.
- ellipse(17,-25,5.5,eyeHeight,'#2d273e');
- if(!blink)ellipse(19,-28,1.8,Math.max(1.5,eyeHeight*.32),'#faf5ed');
- if(dazed)line(10,-36,22,-33,'#5a4366',2.5);
- else if(sleepy)line(10,-34,22,-35,'#5a4366',2.5);
- else line(10,-38,22,-37,'#604866',2.3);
- ellipse(30,-14,2.5,2,'#ef9ca8');
+ if(!profile){
+ // A clear side profile: the near eye leads, the far eye tucks behind it,
+ // and the little nose points forward. ctx.scale above mirrors this when he turns.
+ ellipse(-7,-22,3.7,eyeHeight*.78,'#2d273e');
+ ellipse(11,-21,6,eyeHeight,'#2d273e');
+ if(!blink){ellipse(-5,-24,1.2,Math.max(1.4,eyeHeight*.3),'#faf5ed');ellipse(14,-24,2,Math.max(1.5,eyeHeight*.35),'#faf5ed');}
+ ellipse(22,-14,4.5,3.2,'#ef9ca8');
+ if(dazed){line(-19,-34,-7,-32,'#5a4366',2.5);line(7,-34,19,-37,'#5a4366',2.5);}
+ else if(sleepy){line(-19,-32,-7,-30,'#5a4366',2.5);line(6,-31,19,-29,'#5a4366',2.5);}
+ else{line(-19,-36,-7,-38,'#604866',2.3);line(6,-38,19,-35,'#604866',2.3);}
+ }else{
+ // Side view: one big eye and brow at the front of the head, near the nose.
+ ellipse(15,-25,6,eyeHeight,'#2d273e');
+ if(!blink)ellipse(17.5,-28,2,Math.max(1.5,eyeHeight*.35),'#faf5ed');
+ if(dazed)line(7,-37,21,-34,'#5a4366',2.5);
+ else if(sleepy)line(7,-34,21,-35,'#5a4366',2.5);
+ else line(7,-39,21,-37,'#604866',2.3);
+ }
+ if(profile){ctx.save();ctx.translate(11,-4);} // mouth sits nearer the nose in side view
  if(hic||falling){ellipse(2,-2,5,7,'#67485c');ellipse(3,0,2,3,'#efabaf');}
  else if(pleased){ctx.strokeStyle='#62475a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(2,-9,11,.12,Math.PI-.12);ctx.stroke();}
  else {ctx.strokeStyle='#594257';ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(8,-7,7,.15,Math.PI-.23);ctx.stroke();}
+ if(profile)ctx.restore();
  // Brief motion/expression marks and hiccup bubbles.
  if(falling){for(let i=0;i<3;i++){text('✦',i*20-21,-80-(i%2)*10,14,'#f5d17b');}}
  if(pleased){for(let i=0;i<3;i++)ellipse(30+i*7,-30-i*8,2+i*.5,3,'#89dce988');}
