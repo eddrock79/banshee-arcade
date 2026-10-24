@@ -41,20 +41,21 @@ const BASE_OBJECTS={
 const initial=()=>({room:'cellar',x:92,y:GROUND,vy:0,elapsed:0,wobble:68,water:0,falls:0,inventory:[],selected:-1,found:[],flags:{gate:false,drained:false,fire:false,projector:false,complete:false},runes:[0,2,1],hints:0,steps:0,scoreSaved:false});
 let state=initial(),keys={left:false,right:false},jumpRequested=false,toastUntil=0,toastText='',modalOpen=false,running=false,lastFrame=performance.now(),lastSave=0,blink=0,fireBob=0,randomFallCooldown=0;
 let soundOn=false,audioCtx=null;
-let ghost={x:state.x,y:state.y,vy:0,onGround:true,face:1,tumble:0,lean:0};
+const makeGhost=(x=92,y=GROUND)=>({x,y,vy:0,onGround:true,face:1,tumble:0,walk:0,idle:0,hiccup:0,cheer:0,step:0,blinkAt:3,blinkFor:0});
+let ghost=makeGhost(state.x,state.y);
 const storGet=(k)=>{try{return JSON.parse(localStorage.getItem(k));}catch{return null;}};
 const storSet=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch{}};
 function note(text,duration=3000){toastText=text;toastUntil=performance.now()+duration;$('toast').textContent=text;$('toast').classList.add('show');}
 function beep(freq=440,dur=.08){if(!soundOn)return;try{audioCtx??=new (window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=freq;g.gain.value=.035;o.connect(g).connect(audioCtx.destination);o.start();g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+dur);o.stop(audioCtx.currentTime+dur);}catch{}}
 function save(){if(!state.flags.complete)storSet(SAVE,{...state,x:ghost.x,y:ghost.y,vy:0});}
-function load(){const s=storGet(SAVE);if(!s||!ROOM[s.room]||!Array.isArray(s.inventory)||!s.flags)return false;state={...initial(),...s,flags:{...initial().flags,...s.flags}};ghost={x:clamp(s.x||92,25,925),y:GROUND,vy:0,onGround:true,face:1,tumble:0,lean:0};return true;}
-function reset(){state=initial();ghost={x:92,y:GROUND,vy:0,onGround:true,face:1,tumble:0,lean:0};storSet(SAVE,null);refresh();}
+function load(){const s=storGet(SAVE);if(!s||!ROOM[s.room]||!Array.isArray(s.inventory)||!s.flags)return false;state={...initial(),...s,flags:{...initial().flags,...s.flags}};ghost=makeGhost(clamp(s.x||92,25,925));return true;}
+function reset(){state=initial();ghost=makeGhost();storSet(SAVE,null);refresh();}
 const owns=id=>state.inventory.includes(id);
 function give(id){if(owns(id))return; if(state.inventory.length>=3){note('Your pockets are full. Use something first!');return false;}state.inventory.push(id);state.selected=state.inventory.length-1;beep(560);note(`Picked up: ${ITEMS[id].label}`);refresh();save();return true;}
 function take(id){const i=state.inventory.indexOf(id);if(i!==-1)state.inventory.splice(i,1);state.selected=state.inventory.length?Math.min(state.selected,state.inventory.length-1):-1;refresh();save();}
 function selected(){return state.inventory[state.selected];}
 function unlockFact(id){if(state.found.includes(id))return;state.found.push(id);note(`📖 Historical secret unlocked: ${FACTS[id].title}`,3600);beep(780,.15);refresh();save();}
-function hydrated(){state.water++;state.wobble=Math.max(12,state.wobble-30);note('A glass of water. Fire Ghost approves. Remember: only time sobers you up.',4600);beep(650);refresh();save();}
+function hydrated(){state.water++;ghost.cheer=2.4;ghost.hiccup=0;state.wobble=Math.max(12,state.wobble-30);note('A glass of water. Fire Ghost approves. Remember: only time sobers you up.',4600);beep(650);refresh();save();}
 function activeObjects(){return BASE_OBJECTS[state.room].filter(o=>{
  if(o.id==='crank'&&!owns('crank')&&state.flags.drained===false&&state.steps>=0)return true;
  if(o.id==='crank')return false;
@@ -98,8 +99,7 @@ function use(){if(modalOpen||!running)return;const o=nearestUsable();if(!o){note
 }
 function say(title,body,extra=''){showModal('A GHOST STORY',title,`<p>${body}</p>${extra?`<div class="aside">${extra}</div>`:''}`,[['Carry on',closeModal]]);}
 function factModal(id){const f=FACTS[id];showModal(f.kind,f.title,`<p>${f.text}</p><small>${f.kind==='HISTORY'?'Based on documented Edinburgh history.':'The supernatural elements are fictional.'} <a href="${f.source}" target="_blank" rel="noopener noreferrer">Read more ↗</a></small>`,[['Keep exploring',closeModal]]);}
-function showModal(eyebrow,title,body,buttons){modalOpen=true;$('modal').hidden=false;$('modal-eyebrow').textContent=eyebrow;$('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-actions').replaceChildren();buttons.forEach(([label,callback,isSecondary])=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(isSecondary)b.className='secondary';b.addEventListener('click',callback);$('modal-actions').appendChild(b)});if(dismissible()){const h=document.createElement('span');h.className='modal-hint';h.textContent='or press ← / → to carry on';$('modal-actions').appendChild(h);}$('modal-actions').querySelector('button')?.focus();}
-function dismissible(){return running&&!$('player-name');}
+function showModal(eyebrow,title,body,buttons){modalOpen=true;$('modal').hidden=false;$('modal-eyebrow').textContent=eyebrow;$('modal-title').textContent=title;$('modal-body').innerHTML=body;$('modal-actions').replaceChildren();buttons.forEach(([label,callback,isSecondary])=>{const b=document.createElement('button');b.type='button';b.textContent=label;if(isSecondary)b.className='secondary';b.addEventListener('click',callback);$('modal-actions').appendChild(b)});$('modal-actions').querySelector('button')?.focus();}
 function closeModal(){modalOpen=false;$('modal').hidden=true;keys.left=keys.right=false;refresh();}
 function goIntro(){showModal('A HAUNTED PUBS ADVENTURE','The Ghost of Edinburgh',`<p>Our little ghost has woken up in the <strong>Black Rose cellar</strong> with an almighty headache and no memory of last night. Meanwhile <strong>Fire Ghost</strong> is missing, and something deep beneath Edinburgh has stopped ringing.</p><p>Explore the <strong>Banshee Labyrinth</strong>, solve puzzles using objects found across the city, and uncover its dark history.</p><div class="aside">Move with the arrows. Press E to investigate. Select an item in your pockets and press U to use it. SPACE jumps. On a phone, use the buttons underneath the game.</div><p><small>Playtime: this first chapter is a shorter playable prototype of the planned 15–20-minute adventure.</small></p>`,[
  ['Start new game',()=>{reset();closeModal();running=true;say('An Unfortunate Awakening','“Ohhhh, my head. Was that last night or last century?”','Perhaps find some water. The crank nearby looks important.');}],
@@ -141,8 +141,8 @@ function complete(){if(state.flags.complete)return;state.flags.complete=true;run
 function leaderboard(which='today'){const scores=storGet(SCORES)||[],today=dateEdinburgh();const rows=scores.filter(s=>which==='all'||s.date===today).reduce((acc,s)=>{if(!acc[s.name]||s.score>acc[s.name].score)acc[s.name]=s;return acc;},{});const rank=Object.values(rows).sort((a,b)=>b.score-a.score||a.elapsed-b.elapsed).slice(0,10);const content=`<p><small>Prototype leaderboard: scores on <strong>this browser only</strong>. Shared, cross-device scores will follow with a server database.</small></p><div class="pills"><button type="button" id="tab-today" class="${which==='today'?'active':''}">Today</button><button type="button" id="tab-all" class="${which==='all'?'active':''}">All Time</button></div><table class="leaderboard"><thead><tr><th>#</th><th>GHOST</th><th>TIME</th><th>SCORE</th></tr></thead><tbody>${rank.length?rank.map((s,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(s.name)}</td><td>${timeText(s.elapsed)}</td><td>${s.score.toLocaleString('en-GB')}</td></tr>`).join(''):'<tr><td colspan="4">Nobody on the board yet. Be the first!</td></tr>'}</tbody></table>`;
  showModal('THE HAUNTED HALL OF FAME',which==='today'?'Today’s Best Ghosts':'All-Time Legends',content,[['Back to game',()=>{if(state.flags.complete)goIntro();else closeModal();}],['New adventure',()=>{reset();running=true;closeModal();},true]]);$('tab-today').onclick=()=>leaderboard('today');$('tab-all').onclick=()=>leaderboard('all');}
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function update(dt){state.elapsed+=dt;state.wobble=clamp(state.wobble+dt*.12,0,95);state.steps+=dt;if(randomFallCooldown>0)randomFallCooldown-=dt;ghost.tumble=Math.max(0,ghost.tumble-dt);
- let dir=(keys.right?1:0)-(keys.left?1:0);const speed=state.wobble>70?174:200;if(dir)ghost.face=dir;ghost.lean+=((dir?(ghost.onGround?.2:.12):0)+(dir?(state.wobble/100)*.14:0)-ghost.lean)*Math.min(1,dt*9);
+function update(dt){state.elapsed+=dt;state.wobble=clamp(state.wobble+dt*.12,0,95);state.steps+=dt;if(randomFallCooldown>0)randomFallCooldown-=dt;ghost.tumble=Math.max(0,ghost.tumble-dt);ghost.cheer=Math.max(0,ghost.cheer-dt);ghost.hiccup=Math.max(0,ghost.hiccup-dt);ghost.blinkFor=Math.max(0,ghost.blinkFor-dt);
+ let dir=(keys.right?1:0)-(keys.left?1:0);const speed=state.wobble>70?174:200;if(dir)ghost.face=dir;ghost.idle=dir?0:ghost.idle+dt;if(dir&&ghost.onGround)ghost.walk+=dt*(state.wobble>70?8.3:10.5);if(!dir)ghost.walk+=dt*.7;ghost.step=dir; if(state.elapsed>ghost.blinkAt){ghost.blinkFor=.14;ghost.blinkAt=state.elapsed+2.4+((Math.sin(state.elapsed*13)+1)*2.1);}
  const wobble=state.wobble>55?Math.sin(state.elapsed*8)*((state.wobble-55)*.03):0;
  ghost.x+=(dir*speed+wobble)*dt;
  if(jumpRequested&&ghost.onGround){ghost.vy=-530;ghost.onGround=false;beep(410,.06);}jumpRequested=false;
@@ -153,10 +153,11 @@ function update(dt){state.elapsed+=dt;state.wobble=clamp(state.wobble+dt*.12,0,9
  if(state.room==='vault'&&!state.flags.drained&&ghost.x>465)ghost.x=465;
  if(ghost.x<24){if(state.room==='workshop')changeRoom('cowgate',390);else if(ROOM[state.room].left)changeRoom(ROOM[state.room].left,920);else ghost.x=24;}
  if(ghost.x>936){if(ROOM[state.room].right)changeRoom(ROOM[state.room].right,45);else ghost.x=936;}
- if(state.wobble>74 && ghost.onGround && Math.abs(dir)>0 && randomFallCooldown<=0 && Math.sin(state.elapsed*3.5)>0.997){ghost.tumble=.63;state.falls++;randomFallCooldown=10;note('The floor is having another go at you. Time for water?',2400);}
+ if(state.wobble>74 && ghost.onGround && Math.abs(dir)>0 && randomFallCooldown<=0 && Math.sin(state.elapsed*3.5)>0.997){ghost.tumble=1.04;state.falls++;randomFallCooldown=10;note('Oops! Even ghosts should know their limits. Have a rest and some water.',2600);beep(160,.12);}
+ if(state.wobble>56 && ghost.hiccup===0 && Math.sin(state.elapsed*1.65)>0.9997 && randomFallCooldown<=0){ghost.hiccup=1.6;beep(520,.035);}
  fireBob+=dt;blink+=dt;
  if(state.elapsed-lastSave>8){lastSave=state.elapsed;save();}
- $('wobble-fill').style.width=`${Math.round(state.wobble)}%`;$('wobble-label').textContent=`${Math.round(state.wobble)}%`;$('clock').textContent=timeText(state.elapsed);$('score').textContent=String(state.flags.complete?computeScore():state.found.length*100+[state.flags.gate,state.flags.drained,state.flags.fire,state.flags.projector].filter(Boolean).length*150).padStart(4,'0')+' PTS';
+ $('wobble-fill').style.width=`${Math.round(state.wobble)}%`;$('wobble-label').textContent=`${Math.round(state.wobble)}%`;$('ghost-profile').classList.toggle('wobbly',state.wobble>72);$('ghost-profile').classList.toggle('happy',ghost.cheer>0);$('clock').textContent=timeText(state.elapsed);$('score').textContent=String(state.flags.complete?computeScore():state.found.length*100+[state.flags.gate,state.flags.drained,state.flags.fire,state.flags.projector].filter(Boolean).length*150).padStart(4,'0')+' PTS';
  const n=nearest();$('prompt').textContent=n?`[E] ${n.label}${selected()?`    [U] use ${ITEMS[selected()].label}`:''}`:'← explore →     SPACE jump';
 }
 // Procedural vector art: no proprietary graphics or external image files.
@@ -210,27 +211,124 @@ function drawObjects(){for(const o of activeObjects()){const wave=Math.sin(fireB
  }}
 function drawFire(x,y,scale=1,behind=false){ctx.save();ctx.translate(x,y+Math.sin(fireBob*6)*5);ctx.scale(scale,scale);glow(0,0,44,'#ff6b2d70');ctx.fillStyle='#fc7b31';ctx.beginPath();ctx.moveTo(-18,21);ctx.bezierCurveTo(-37,3,-4,-7,-12,-32);ctx.bezierCurveTo(2,-24,3,-37,9,-45);ctx.bezierCurveTo(14,-20,31,-7,20,22);ctx.closePath();ctx.fill();ctx.fillStyle='#f4cc5e';ctx.beginPath();ctx.moveTo(-9,18);ctx.bezierCurveTo(-16,6,2,-9,3,-19);ctx.bezierCurveTo(9,-7,19,4,12,19);ctx.closePath();ctx.fill();ellipse(-5,3,3.5,5,'#231e2d');ellipse(9,3,3.5,5,'#231e2d');ctx.restore();if(behind)text('HELP!',x,y-72,12,'#ffc7a1');}
 function drawNpc(x,ground){ctx.save();ctx.translate(x,ground);ellipse(0,-30,21,35,'#1a171e');ellipse(0,-66,21,19,'#d0a98e');rect(-25,-85,50,13,'#19151f');rect(-11,-101,22,18,'#17131b');ellipse(-7,-68,2,4,'#2a1e26');ellipse(9,-68,2,4,'#2a1e26');ctx.restore();}
-function drawGhost(){ctx.save();let wob=(state.wobble/100)*Math.sin(state.elapsed*8)*9,fall=ghost.tumble>0;ctx.translate(ghost.x,ghost.y-35+Math.sin(fireBob*6)*2);if(fall)ctx.rotate(ghost.face*1.35*Math.sin(Math.PI*(1-ghost.tumble/.63)));else ctx.rotate(ghost.face*ghost.lean+wob*Math.PI/180);ctx.scale(ghost.face,1);
- glow(0,0,62,'#b5d9ee1c');ellipse(0,31,24,5,'#070b1880');
- ctx.fillStyle='#f0ecf4';ctx.strokeStyle='#c4c3df';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-26,20);ctx.bezierCurveTo(-33,-3,-32,-35,-13,-42);ctx.bezierCurveTo(7,-52,32,-35,31,-9);ctx.lineTo(30,21);ctx.quadraticCurveTo(23,32,15,23);ctx.quadraticCurveTo(6,35,-2,24);ctx.quadraticCurveTo(-16,34,-23,22);ctx.closePath();ctx.fill();ctx.stroke();
- ellipse(0,-14,5,8,'#232339');ellipse(19,-14,5,8,'#232339');ellipse(2,-12,1.5,3,'#f6f1f0');ellipse(21,-12,1.5,3,'#f6f1f0');ctx.strokeStyle='#57465a';ctx.lineWidth=2;ctx.beginPath();ctx.arc(12,-2,6,0.1,Math.PI-.2);ctx.stroke();
- // scarf and glove — our ghost’s signature look
- rect(-29,0,15,10,'#bd5c61');rect(17,2,15,10,'#bd5c61');rect(-15,22,7,9,'#a94355');rect(12,23,7,9,'#a94355');ctx.restore();
- if(state.flags.fire)drawFire(ghost.x-ghost.face*61,ghost.y-33,.75);
+// Our hero is a CHARACTER rather than a static blob: squash/stretch, a crooked
+// Edinburgh cap, expressive sleepy eyes, rosy cheeks, a flapping scarf and boots.
+// Falls are visual gags only: movement and puzzles remain fully controllable.
+function drawGhost(){
+ const t=state.elapsed, moving=Math.abs(ghost.step)>0, jumping=!ghost.onGround;
+ const wobble=state.wobble/100, falling=ghost.tumble>0;
+ const gait=moving?Math.sin(ghost.walk):0;
+ const sway=Math.sin(t*(4.5+wobble*3))*(wobble*.10)+(moving?gait*.055:0);
+ const breathing=Math.sin(t*2.4)*.025;
+ const spring=jumping?1.075:1+breathing+(moving?Math.abs(gait)*-.052:0);
+ const blink=ghost.blinkFor>0;
+ const pleased=ghost.cheer>0;
+ const dazed=falling||state.wobble>83;
+ const sleepy=ghost.idle>5&&!pleased;
+ const hic=ghost.hiccup>0;
+ const spin=falling? Math.sin((1.04-ghost.tumble)/1.04*Math.PI)*1.20:0;
+ // Soft grounding shadow is anchored to the platform, not the bouncing body.
+ ellipse(ghost.x,ghost.y+1,31+(jumping?-7:0),6,'#08071399');
+ if(falling){for(let i=0;i<4;i++){let x=ghost.x-ghost.face*(i*13-8),y=ghost.y-2-i*3;ellipse(x,y,5+i,2.5,'#c9acc177');}}
+ ctx.save();
+ const bob=(moving&&ghost.onGround?Math.abs(gait)*2.7:Math.sin(t*2.5)*1.9);
+ ctx.translate(ghost.x,ghost.y-46-bob+(jumping?-5:0));
+ ctx.rotate(sway+(falling?ghost.face*spin:0));
+ ctx.scale(ghost.face*(1+(pleased?.055:0)),spring);
+ glow(0,-7,70,pleased?'#8fe7dc46':'#b4d5ef24');
+ // Feet, which lift and swing slightly when he runs, with scarlet wee boots.
+ for(let side of [-1,1]){
+   const stride=moving&&ghost.onGround?Math.sin(ghost.walk+(side===1?Math.PI:0))*7:0;
+   const lift=moving&&ghost.onGround?Math.max(0,stride)*.6:jumping?3:0;
+   const footX=side*14+stride*.55;
+   line(footX,25,footX+side*2,35-lift,'#b9afc9',5);
+   ellipse(footX+side*3,36-lift,11,6,side===-1?'#bc495f':'#d45c65');
+   ellipse(footX+side*6,35-lift,4,2,'#f9bf9c');
+ }
+ // Arms animate independently; he tries rather hard to keep his balance.
+ const armSwing=moving?gait*8:Math.sin(t*2)*2;
+ const armY=pleased?-17:falling?-21:0;
+ for(let side of [-1,1]){
+   const ax=side*29,ay=side===-1?3+armSwing:3-armSwing;
+   ctx.strokeStyle='#e4e2f0';ctx.lineWidth=11;ctx.lineCap='round';
+   ctx.beginPath();ctx.moveTo(side*19,-11);ctx.quadraticCurveTo(ax+side*5,-3,ax+side*5,ay+armY);ctx.stroke();
+   ellipse(ax+side*5,ay+armY,9,10,'#a52f49');
+   ellipse(ax+side*2,ay+armY-3,5,5,'#e7717e');
+ }
+ // Pudgy, softly shaded body with three little ghostly tail scallops.
+ ctx.save();
+ const body=ctx.createLinearGradient(-33,-38,34,33);
+ body.addColorStop(0,'#ffffff');body.addColorStop(.53,'#f8f5f1');body.addColorStop(1,'#bfd1e0');
+ ctx.fillStyle=body;ctx.strokeStyle='#716c90';ctx.lineWidth=3.3;ctx.lineJoin='round';
+ ctx.beginPath();ctx.moveTo(-31,15);ctx.bezierCurveTo(-40,-13,-31,-50,-3,-53);
+ ctx.bezierCurveTo(29,-56,39,-28,33,7);
+ ctx.quadraticCurveTo(33,28,21,26);ctx.quadraticCurveTo(13,36,3,27);
+ ctx.quadraticCurveTo(-5,34,-13,27);ctx.quadraticCurveTo(-24,34,-31,15);
+ ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+ // Belly, highlights, rosy cheeks and a crooked purple neckerchief.
+ ellipse(7,11,17,14,'#d8e1e9aa');
+ ellipse(-19,-21,7,17,'#ffffff99');
+ ellipse(-20,-3,7,4,'#ef9ca8a8');ellipse(22,-3,7,4,'#ef9ca8a8');
+ ctx.strokeStyle='#503b6d';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-23,11);ctx.quadraticCurveTo(0,20,24,8);ctx.stroke();
+ ctx.strokeStyle='#8d659c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-22,9);ctx.quadraticCurveTo(0,17,19,9);ctx.stroke();
+ ctx.save();ctx.translate(20,13);ctx.rotate(.2+(moving?gait*.3:0)+Math.sin(t*3)*.12);
+ rect(0,0,10,23,'#76517e');rect(2,0,3,19,'#b485b9');ctx.restore();
+ ellipse(0,14,5,5,'#e4be79');text('B',0,17,7,'#36243f','Georgia');
+ // A slightly crooked old Edinburgh cap, with a miniature Black Rose badge.
+ ctx.save();ctx.translate(0,-47);ctx.rotate(-.17+Math.sin(t*1.7)*.03+(falling?.22:0));
+ ctx.fillStyle='#302339';ctx.strokeStyle='#15111f';ctx.lineWidth=2;
+ ctx.beginPath();ctx.moveTo(-26,0);ctx.quadraticCurveTo(-27,-23,-6,-24);
+ ctx.quadraticCurveTo(17,-27,25,-13);ctx.lineTo(27,-2);ctx.closePath();ctx.fill();ctx.stroke();
+ ellipse(10,-3,24,4,'#241827');
+ ellipse(11,-15,4,4,'#b94f5d');ellipse(14,-17,2,2,'#f4a0a6');
+ ctx.restore();
+ // Face: two independently animated eyes, lids, brows and comic mouths.
+ const eyeHeight=blink?.9:(sleepy?3:dazed?6:9);
+ ellipse(-12,-21,6,eyeHeight,'#2d273e');ellipse(13,-22,6,eyeHeight,'#2d273e');
+ if(!blink){ellipse(-10,-24,2.1,Math.max(1.5,eyeHeight*.35),'#faf5ed');ellipse(15,-25,2.1,Math.max(1.5,eyeHeight*.35),'#faf5ed');}
+ if(dazed){line(-19,-34,-7,-32,'#5a4366',2.5);line(7,-34,19,-37,'#5a4366',2.5);}
+ else if(sleepy){line(-19,-32,-7,-30,'#5a4366',2.5);line(6,-31,19,-29,'#5a4366',2.5);}
+ else{line(-19,-36,-7,-38,'#604866',2.3);line(6,-38,19,-35,'#604866',2.3);}
+ if(hic||falling){ellipse(2,-2,5,7,'#67485c');ellipse(3,0,2,3,'#efabaf');}
+ else if(pleased){ctx.strokeStyle='#62475a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(2,-9,11,.12,Math.PI-.12);ctx.stroke();}
+ else {ctx.strokeStyle='#594257';ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(2,-7,7,.15,Math.PI-.23);ctx.stroke();}
+ // Brief motion/expression marks and hiccup bubbles.
+ if(falling){for(let i=0;i<3;i++){text('✦',i*20-21,-80-(i%2)*10,14,'#f5d17b');}}
+ if(pleased){for(let i=0;i<3;i++)ellipse(30+i*7,-30-i*8,2+i*.5,3,'#89dce988');}
+ ctx.restore();
+ if(hic){
+   const bx=clamp(ghost.x+ghost.face*53,48,W-50),by=Math.max(56,ghost.y-133);
+   ctx.save();ctx.font='bold 15px Georgia';const bw=52;
+   ctx.fillStyle='#f6e1c4';ctx.strokeStyle='#5f405d';ctx.lineWidth=2;
+   ctx.beginPath();ctx.roundRect(bx-bw/2,by-15,bw,27,9);ctx.fill();ctx.stroke();
+   text('HIC!',bx,by+4,14,'#38243c','Arial');ctx.restore();
+ }
+ if(ghost.idle>7 && ghost.idle%18<2.6 && !hic && !pleased){
+   const lines=state.flags.fire?["Fire Ghost, is it still Tuesday?","I could murder a glass of water.","Do ghosts get holidays?"]:["Where's Fire Ghost got to?","What year is it, anyway?","I might just rest here."];
+   const bubble=lines[['cellar','bar','cinema'].includes(state.room)?0:state.flags.fire?1:2];
+   const bx=clamp(ghost.x,100,W-100),by=Math.max(41,ghost.y-160);
+   ctx.fillStyle='#f7e7cf';ctx.strokeStyle='#624860';ctx.lineWidth=2;ctx.beginPath();ctx.roundRect(bx-101,by-19,202,32,9);ctx.fill();ctx.stroke();
+   text(bubble,bx,by+2,13,'#392c3d','Arial');
+ }
+ if(state.flags.fire){
+   let fx=ghost.x-ghost.face*79,fy=ghost.y-73+Math.sin(fireBob*2)*5;
+   drawFire(fx,fy,.88);
+   if(falling){text('!',fx,fy-51,25,'#ffbd80');}
+ }
 }
 function render(){ctx.clearRect(0,0,W,H);bg();drawObjects();drawGhost();if(state.wobble>72){rect(0,0,W,6,'#a54b5166');rect(0,H-6,W,6,'#a54b5166');}}
 function frame(t){const dt=Math.min(.04,(t-lastFrame)/1000);lastFrame=t;if(running&&!modalOpen)update(dt);render();if(toastText && t>toastUntil){toastText='';$('toast').classList.remove('show')}requestAnimationFrame(frame)}
-function keyDown(e){if(['ArrowLeft','ArrowRight','ArrowUp',' ','Spacebar'].includes(e.key))e.preventDefault();if(modalOpen){const k0=e.key.toLowerCase(),dirK=(k0==='arrowleft'||k0==='a')?'left':(k0==='arrowright'||k0==='d')?'right':null;if(dirK&&dismissible()){closeModal();keys[dirK]=true;return;}if(e.key==='Escape'&&running)closeModal();return;}
+function keyDown(e){if(['ArrowLeft','ArrowRight','ArrowUp',' ','Spacebar'].includes(e.key))e.preventDefault();if(modalOpen){if(e.key==='Escape'&&running)closeModal();return;}
  if(e.repeat&&['e','E','u','U','h','H'].includes(e.key))return;
  const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=true;if(k==='arrowright'||k==='d')keys.right=true;if(k==='arrowup'||k===' '||k==='w')jumpRequested=true;if(k==='e'||k==='enter')interact();if(k==='u'||k==='q')use();if(k==='h')hint();if(['1','2','3'].includes(k)){const n=Number(k)-1;if(state.inventory[n]){state.selected=n;refresh();}}}
 function keyUp(e){const k=e.key.toLowerCase();if(k==='arrowleft'||k==='a')keys.left=false;if(k==='arrowright'||k==='d')keys.right=false;}
 window.addEventListener('keydown',keyDown);window.addEventListener('keyup',keyUp);window.addEventListener('blur',()=>{keys.left=keys.right=false;});
-for(const ev of ['contextmenu','selectstart','dragstart'])document.querySelector('.touch-controls').addEventListener(ev,e=>e.preventDefault());
 for(const b of document.querySelectorAll('[data-control]')){const act=b.dataset.control;
- const down=e=>{e.preventDefault();if(modalOpen&&(act==='left'||act==='right')&&dismissible())closeModal();b.classList.add('active');if(act==='left'||act==='right')keys[act]=true;else if(act==='jump')jumpRequested=true;else if(act==='interact')interact();else if(act==='use')use();};
+ const down=e=>{e.preventDefault();b.classList.add('active');if(act==='left'||act==='right')keys[act]=true;else if(act==='jump')jumpRequested=true;else if(act==='interact')interact();else if(act==='use')use();};
  const up=e=>{e.preventDefault();b.classList.remove('active');if(act==='left'||act==='right')keys[act]=false;};
  b.addEventListener('pointerdown',down);b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);b.addEventListener('pointerleave',up);
 }
+$('ghost-profile').onclick=()=>{const sayings=["The floor's moving again. Suspicious.","Water first. Then we'll save Edinburgh.","I can explain the hat. Probably.","Fire Ghost says I need more rest. Rude.","I swear those stairs weren't there a minute ago."];ghost.hiccup=1.3;note(sayings[Math.floor(Math.random()*sayings.length)],3100);};
 $('btn-leaderboard').onclick=()=>leaderboard('today');$('btn-journal').onclick=history;$('btn-hint').onclick=hint;$('btn-sound').onclick=()=>{soundOn=!soundOn;$('btn-sound').textContent=soundOn?'♫ ON':'♫ OFF';beep(800);};
 $('score').addEventListener('click',()=>leaderboard('today'));$('score').style.cursor='pointer';$('score').title='View the local high-score boards';
 refresh();goIntro();requestAnimationFrame(frame);

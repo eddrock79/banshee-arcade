@@ -2,6 +2,14 @@
 
 **Playable prototype / Chapter One**, created for Haunted Pubs and designed for a 15–20-minute Dizzy-inspired Edinburgh adventure. This is a shorter, self-contained first chapter, not the full proposed game.
 
+## v2 — little ghost character upgrade
+
+- Rebuilt the hero as a more expressive cartoon character: crooked Edinburgh cap, Black Rose badge, purple scarf, rosy cheeks, gloves and animated wee red boots.
+- New running, jumping, idle breathing, blinking, cheeky grins, sleepy/squinting eyes, hiccups, and comic (non-blocking) tumbles with dust and stars.
+- Animated character portrait by the wobble meter, including on phones. Tap it for an occasional cheeky remark.
+- Celebratory reaction after a water break and Fire Ghost reacting to falls.
+- The puzzle chain, saved games and local scores remain compatible with the original prototype.
+
 ## What is implemented
 
 - 8 hand-drawn, side-on, interconnected rooms: Black Rose Cellar, Black Rose Tavern, Cowgate, Banshee Cinema, Banshee Passage, Deacon Brodie's Workshop, South Bridge Vaults and Stone Circle.
