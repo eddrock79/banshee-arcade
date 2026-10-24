@@ -284,14 +284,18 @@ function drawGhost(){
  ctx.restore();
  // Face: two independently animated eyes, lids, brows and comic mouths.
  const eyeHeight=blink?.9:(sleepy?3:dazed?6:9);
- ellipse(-12,-21,6,eyeHeight,'#2d273e');ellipse(13,-22,6,eyeHeight,'#2d273e');
- if(!blink){ellipse(-10,-24,2.1,Math.max(1.5,eyeHeight*.35),'#faf5ed');ellipse(15,-25,2.1,Math.max(1.5,eyeHeight*.35),'#faf5ed');}
+ // A clear side profile: the near eye leads, the far eye tucks behind it,
+ // and the little nose points forward. ctx.scale above mirrors this when he turns.
+ ellipse(-7,-22,3.7,eyeHeight*.78,'#2d273e');
+ ellipse(11,-21,6,eyeHeight,'#2d273e');
+ if(!blink){ellipse(-5,-24,1.2,Math.max(1.4,eyeHeight*.3),'#faf5ed');ellipse(14,-24,2,Math.max(1.5,eyeHeight*.35),'#faf5ed');}
+ ellipse(22,-14,4.5,3.2,'#ef9ca8');
  if(dazed){line(-19,-34,-7,-32,'#5a4366',2.5);line(7,-34,19,-37,'#5a4366',2.5);}
  else if(sleepy){line(-19,-32,-7,-30,'#5a4366',2.5);line(6,-31,19,-29,'#5a4366',2.5);}
  else{line(-19,-36,-7,-38,'#604866',2.3);line(6,-38,19,-35,'#604866',2.3);}
  if(hic||falling){ellipse(2,-2,5,7,'#67485c');ellipse(3,0,2,3,'#efabaf');}
  else if(pleased){ctx.strokeStyle='#62475a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(2,-9,11,.12,Math.PI-.12);ctx.stroke();}
- else {ctx.strokeStyle='#594257';ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(2,-7,7,.15,Math.PI-.23);ctx.stroke();}
+ else {ctx.strokeStyle='#594257';ctx.lineWidth=2.8;ctx.beginPath();ctx.arc(8,-7,7,.15,Math.PI-.23);ctx.stroke();}
  // Brief motion/expression marks and hiccup bubbles.
  if(falling){for(let i=0;i<3;i++){text('✦',i*20-21,-80-(i%2)*10,14,'#f5d17b');}}
  if(pleased){for(let i=0;i<3;i++)ellipse(30+i*7,-30-i*8,2+i*.5,3,'#89dce988');}
